@@ -1,0 +1,1 @@
+--8<-- "development/local-mq-container.md"

@@ -1,0 +1,1 @@
+--8<-- "design/runcommand-endpoint.md"

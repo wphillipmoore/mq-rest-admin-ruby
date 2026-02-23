@@ -1,0 +1,202 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Auto-memory policy
+
+**Do NOT use MEMORY.md.** Claude Code's auto-memory feature stores behavioral
+rules outside of version control, making them invisible to code review,
+inconsistent across repos, and unreliable across sessions. All behavioral rules,
+conventions, and workflow instructions belong in managed, version-controlled
+documentation (CLAUDE.md, AGENTS.md, skills, or docs/).
+
+If you identify a pattern, convention, or rule worth preserving:
+
+1. **Stop.** Do not write to MEMORY.md.
+2. **Discuss with the user** what you want to capture and why.
+3. **Together, decide** the correct managed location (CLAUDE.md, a skill file,
+   standards docs, or a new issue to track the gap).
+
+This policy exists because MEMORY.md is per-directory and per-machine — it
+creates divergent agent behavior across the multi-repo environment this project
+operates in. Consistency requires all guidance to live in shared, reviewable
+documentation.
+
+## Shell command policy
+
+**Do NOT use heredocs** (`<<EOF` / `<<'EOF'`) for multi-line arguments to CLI
+tools such as `gh`, `git commit`, or `curl`. Heredocs routinely fail due to
+shell escaping issues with apostrophes, backticks, and special characters.
+Always write multi-line content to a temporary file and pass it via `--body-file`
+or `--file` instead.
+
+## Documentation Strategy
+
+This repository uses two complementary approaches for AI agent guidance:
+
+- **AGENTS.md**: Generic AI agent instructions using include directives to force documentation indexing. Contains canonical standards references, shared skills loading, and user override support.
+- **CLAUDE.md** (this file): Claude Code-specific guidance with prescriptive commands, architecture details, and development workflows optimized for `/init`.
+
+<!-- include: docs/standards-and-conventions.md -->
+<!-- include: docs/repository-standards.md -->
+
+## Project Overview
+
+`mq-rest-admin` is a Ruby wrapper for the IBM MQ administrative REST
+API. The project provides typed Ruby methods for every MQSC command
+exposed by the `runCommandJSON` REST endpoint, with automatic attribute name
+translation between Ruby idioms and native MQSC parameter names.
+
+**Project name**: mq-rest-admin-ruby
+
+**Status**: Pre-alpha (initial setup)
+
+**Canonical Standards**: This repository follows standards at <https://github.com/wphillipmoore/standards-and-conventions> (local path: `../standards-and-conventions` if available)
+
+## Development Commands
+
+### Standard Tooling
+
+```bash
+cd ../standard-tooling && uv sync                                                # Install standard-tooling
+export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH" # Put tools on PATH
+git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks               # Enable git hooks
+```
+
+### Environment Setup
+
+```bash
+bundle install
+```
+
+### Validation
+
+```bash
+bundle exec rake
+```
+
+### Testing
+
+```bash
+bundle exec rake test        # Run unit tests
+bundle exec rubocop          # Run linter
+```
+
+### Local MQ Container
+
+The MQ development environment is owned by the
+[mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment)
+repository. Clone it as a sibling directory before running lifecycle
+scripts:
+
+```bash
+# Prerequisite (one-time)
+git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
+
+# Start the containerized MQ queue managers
+./scripts/dev/mq_start.sh
+
+# Seed deterministic test objects (DEV.* prefix)
+./scripts/dev/mq_seed.sh
+
+# Verify REST-based MQSC responses
+./scripts/dev/mq_verify.sh
+
+# Stop the queue managers
+./scripts/dev/mq_stop.sh
+
+# Reset to clean state (removes data volumes)
+./scripts/dev/mq_reset.sh
+```
+
+Container details:
+
+- Queue managers: `QM1` and `QM2`
+- QM1 ports: `1414` (MQ listener), `9443` (mqweb console + REST API)
+- QM2 ports: `1415` (MQ listener), `9444` (mqweb console + REST API)
+- Admin credentials: `mqadmin` / `mqadmin`
+- Read-only credentials: `mqreader` / `mqreader`
+- QM1 REST base URL: `https://localhost:9443/ibmmq/rest/v2`
+- QM2 REST base URL: `https://localhost:9444/ibmmq/rest/v2`
+- Object prefix: `DEV.*`
+
+## Architecture
+
+### Gem layout (`lib/mq/rest/admin/`)
+
+- **`version.rb`** — `MQ::REST::Admin::VERSION`
+- **`errors.rb`** — `Error < StandardError` + 6 subclasses
+- **`auth.rb`** — `BasicAuth`, `LTPAAuth`, `CertificateAuth` (`Data.define`)
+- **`transport.rb`** — `TransportResponse` (`Data.define`), `NetHTTPTransport`
+- **`mapping_data.rb`** — Loads and freezes `mapping-data.json`
+- **`mapping.rb`** — 3-layer mapping pipeline + `MappingIssue`
+- **`mapping_merge.rb`** — Override validation and merge/replace
+- **`session.rb`** — `Session` class, `mqsc_command` dispatcher
+- **`commands.rb`** — 149 MQSC command methods (module)
+- **`ensure.rb`** — 16 idempotent ensure methods (module)
+- **`sync.rb`** — 9 synchronous polling methods (module)
+
+### Key design decisions
+
+- **Zero runtime dependencies** — uses `net/http` from stdlib
+- **Ruby 3.2+** — uses `Data.define` for immutable value objects
+- **Module mixins** — `Commands`, `Ensure`, `Sync` included into `Session`
+
+## Branching and PR Workflow
+
+- **Protected branches**: `main`, `develop` — no direct commits (enforced by pre-commit hook)
+- **Branch naming**: `feature/*`, `bugfix/*`, `hotfix/*`, `chore/*`, or `release/*` only
+- **Feature/bugfix PRs** target `develop` with squash merge
+- **Release PRs** target `main` with regular merge
+- **Pre-flight**: Always check branch with `git status -sb` before modifying files. If on `develop`, create a `feature/*` branch first.
+
+## Commit and PR Scripts
+
+**NEVER use raw `git commit`** — always use `st-commit`.
+**NEVER use raw `gh pr create`** — always use `st-submit-pr`.
+
+### Committing
+
+```bash
+st-commit --type feat --scope session --message "add new feature" --agent claude
+st-commit --type fix --message "correct bug" --agent claude
+st-commit --type docs --message "update README" --body "Expanded usage section" --agent claude
+```
+
+- `--type` (required): `feat|fix|docs|style|refactor|test|chore|ci|build`
+- `--message` (required): commit description
+- `--agent` (required): `claude` or `codex` — resolves the correct `Co-Authored-By` identity
+- `--scope` (optional): conventional commit scope
+- `--body` (optional): detailed commit body
+
+### Submitting PRs
+
+```bash
+st-submit-pr --issue 42 --summary "Add new feature"
+st-submit-pr --issue 42 --linkage Ref --summary "Update docs" --docs-only
+st-submit-pr --issue 42 --summary "Fix bug" --notes "Tested on macOS and Linux"
+```
+
+- `--issue` (required): GitHub issue number (just the number)
+- `--summary` (required): one-line PR summary
+- `--linkage` (optional, default: `Fixes`): `Fixes|Closes|Resolves|Ref`
+- `--title` (optional): PR title (default: most recent commit subject)
+- `--notes` (optional): additional notes
+- `--docs-only` (optional): applies docs-only testing exception
+- `--dry-run` (optional): print generated PR without executing
+
+## Key References
+
+**Canonical Standards**: <https://github.com/wphillipmoore/standards-and-conventions>
+
+- Local path (preferred): `../standards-and-conventions`
+- Load all skills from: `<standards-repo-path>/skills/**/SKILL.md`
+
+**Reference implementation**: `../mq-rest-admin-python` (Python version)
+
+**External Documentation**:
+
+- IBM MQ 9.4 administrative REST API
+- MQSC command reference
+
+**User Overrides**: `~/AGENTS.md` (optional, applied if present and readable)

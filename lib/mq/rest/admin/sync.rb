@@ -1,0 +1,174 @@
+# frozen_string_literal: true
+
+module MQ
+  module REST
+    module Admin
+      # Configuration for synchronous polling operations.
+      SyncConfig = Data.define(:timeout_seconds, :poll_interval_seconds) do
+        def initialize(timeout_seconds: 30.0, poll_interval_seconds: 1.0)
+          super
+        end
+      end
+
+      # Result of a synchronous start/stop/restart operation.
+      SyncResult = Data.define(:operation, :polls, :elapsed_seconds)
+
+      RUNNING_VALUES = %w[RUNNING running].to_set.freeze
+      STOPPED_VALUES = %w[STOPPED stopped].to_set.freeze
+
+      ObjectTypeConfig = Data.define(
+        :start_qualifier, :stop_qualifier, :status_qualifier,
+        :status_keys, :empty_means_stopped
+      )
+
+      CHANNEL_CONFIG = ObjectTypeConfig.new(
+        start_qualifier: 'CHANNEL', stop_qualifier: 'CHANNEL',
+        status_qualifier: 'CHSTATUS', status_keys: %w[channel_status STATUS],
+        empty_means_stopped: true
+      ).freeze
+
+      LISTENER_CONFIG = ObjectTypeConfig.new(
+        start_qualifier: 'LISTENER', stop_qualifier: 'LISTENER',
+        status_qualifier: 'LSSTATUS', status_keys: %w[status STATUS],
+        empty_means_stopped: false
+      ).freeze
+
+      SERVICE_CONFIG = ObjectTypeConfig.new(
+        start_qualifier: 'SERVICE', stop_qualifier: 'SERVICE',
+        status_qualifier: 'SVSTATUS', status_keys: %w[status STATUS],
+        empty_means_stopped: false
+      ).freeze
+
+      module Sync
+        def start_channel_sync(name, config: nil)
+          start_and_poll(name, CHANNEL_CONFIG, config)
+        end
+
+        def stop_channel_sync(name, config: nil)
+          stop_and_poll(name, CHANNEL_CONFIG, config)
+        end
+
+        def restart_channel(name, config: nil)
+          do_restart(name, CHANNEL_CONFIG, config)
+        end
+
+        def start_listener_sync(name, config: nil)
+          start_and_poll(name, LISTENER_CONFIG, config)
+        end
+
+        def stop_listener_sync(name, config: nil)
+          stop_and_poll(name, LISTENER_CONFIG, config)
+        end
+
+        def restart_listener(name, config: nil)
+          do_restart(name, LISTENER_CONFIG, config)
+        end
+
+        def start_service_sync(name, config: nil)
+          start_and_poll(name, SERVICE_CONFIG, config)
+        end
+
+        def stop_service_sync(name, config: nil)
+          stop_and_poll(name, SERVICE_CONFIG, config)
+        end
+
+        def restart_service(name, config: nil)
+          do_restart(name, SERVICE_CONFIG, config)
+        end
+
+        private
+
+        def start_and_poll(name, obj_config, config)
+          cfg = config || SyncConfig.new
+          mqsc_command(
+            command: 'START', mqsc_qualifier: obj_config.start_qualifier,
+            name: name, request_parameters: nil, response_parameters: nil
+          )
+          polls = 0
+          start_time = clock_now
+          loop do
+            sleep_interval(cfg.poll_interval_seconds)
+            status_rows = mqsc_command(
+              command: 'DISPLAY', mqsc_qualifier: obj_config.status_qualifier,
+              name: name, request_parameters: nil, response_parameters: ['all']
+            )
+            polls += 1
+            if has_status?(status_rows, obj_config.status_keys, RUNNING_VALUES)
+              elapsed = clock_now - start_time
+              return SyncResult.new(operation: :started, polls: polls, elapsed_seconds: elapsed)
+            end
+            elapsed = clock_now - start_time
+            next unless elapsed >= cfg.timeout_seconds
+
+            raise TimeoutError.new(
+              "#{obj_config.start_qualifier} '#{name}' did not reach RUNNING within #{cfg.timeout_seconds}s",
+              name: name, operation: 'start', elapsed: elapsed
+            )
+          end
+        end
+
+        def stop_and_poll(name, obj_config, config)
+          cfg = config || SyncConfig.new
+          mqsc_command(
+            command: 'STOP', mqsc_qualifier: obj_config.stop_qualifier,
+            name: name, request_parameters: nil, response_parameters: nil
+          )
+          polls = 0
+          start_time = clock_now
+          loop do
+            sleep_interval(cfg.poll_interval_seconds)
+            status_rows = mqsc_command(
+              command: 'DISPLAY', mqsc_qualifier: obj_config.status_qualifier,
+              name: name, request_parameters: nil, response_parameters: ['all']
+            )
+            polls += 1
+            if obj_config.empty_means_stopped && status_rows.empty?
+              elapsed = clock_now - start_time
+              return SyncResult.new(operation: :stopped, polls: polls, elapsed_seconds: elapsed)
+            end
+            if has_status?(status_rows, obj_config.status_keys, STOPPED_VALUES)
+              elapsed = clock_now - start_time
+              return SyncResult.new(operation: :stopped, polls: polls, elapsed_seconds: elapsed)
+            end
+            elapsed = clock_now - start_time
+            next unless elapsed >= cfg.timeout_seconds
+
+            raise TimeoutError.new(
+              "#{obj_config.stop_qualifier} '#{name}' did not reach STOPPED within #{cfg.timeout_seconds}s",
+              name: name, operation: 'stop', elapsed: elapsed
+            )
+          end
+        end
+
+        def do_restart(name, obj_config, config)
+          stop_result = stop_and_poll(name, obj_config, config)
+          start_result = start_and_poll(name, obj_config, config)
+          SyncResult.new(
+            operation: :restarted,
+            polls: stop_result.polls + start_result.polls,
+            elapsed_seconds: stop_result.elapsed_seconds + start_result.elapsed_seconds
+          )
+        end
+
+        def has_status?(rows, status_keys, target_values)
+          rows.any? do |row|
+            status_keys.any? do |key|
+              value = row[key]
+              value.is_a?(String) && target_values.include?(value)
+            end
+          end
+        end
+
+        # Overridable for testing
+        def clock_now
+          Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        end
+
+        # Overridable for testing
+        def sleep_interval(seconds)
+          sleep(seconds)
+        end
+      end
+    end
+  end
+end

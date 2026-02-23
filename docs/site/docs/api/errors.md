@@ -7,7 +7,7 @@ All errors inherit from `MQ::REST::Admin::Error`, which inherits from
 
 ## Error hierarchy
 
-```
+```text
 StandardError
   └── MQ::REST::Admin::Error
         ├── TransportError

@@ -1,0 +1,1 @@
+--8<-- "design/rationale.md"

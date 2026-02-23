@@ -26,4 +26,7 @@ Gem::Specification.new do |spec|
     Dir['{lib}/**/*', 'LICENSE', 'README.md', 'CHANGELOG.md']
   end
   spec.require_paths = ['lib']
+
+  # base64 was removed from Ruby's default gems in 3.4
+  spec.add_dependency 'base64'
 end

@@ -60,11 +60,11 @@ def load_integration_config
     admin_password: ENV.fetch('MQ_ADMIN_PASSWORD', 'mqadmin'),
     qmgr_name: ENV.fetch('MQ_QMGR_NAME', 'QM1'),
     qmgr_name_qm2: ENV.fetch('MQ_QMGR_NAME_QM2', 'QM2'),
-    verify_tls: parse_bool(ENV.fetch('MQ_REST_VERIFY_TLS', 'false'))
+    verify_tls: parse_bool?(ENV.fetch('MQ_REST_VERIFY_TLS', 'false'))
   )
 end
 
-def parse_bool(value)
+def parse_bool?(value)
   %w[1 true yes on].include?(value.to_s.strip.downcase)
 end
 
@@ -95,7 +95,7 @@ end
 # Assertion helpers
 # ---------------------------------------------------------------------------
 
-def contains_string_value(obj, expected)
+def contains_string_value?(obj, expected)
   normalized = expected.to_s.strip.upcase
   obj.each_value do |v|
     return true if v.is_a?(String) && v.strip.upcase == normalized
@@ -104,15 +104,15 @@ def contains_string_value(obj, expected)
 end
 
 def any_contains_value(results, expected)
-  results.any? { |obj| contains_string_value(obj, expected) }
+  results.any? { |obj| contains_string_value?(obj, expected) }
 end
 
 def find_matching_object(result, expected)
   case result
   when Hash
-    contains_string_value(result, expected) ? result : nil
+    contains_string_value?(result, expected) ? result : nil
   when Array
-    result.find { |obj| obj.is_a?(Hash) && contains_string_value(obj, expected) }
+    result.find { |obj| obj.is_a?(Hash) && contains_string_value?(obj, expected) }
   end
 end
 
@@ -159,12 +159,10 @@ LifecycleCase = Data.define(
   :alter_method, :alter_parameters, :alter_description
 ) do
   def initialize(alter_method: nil, alter_parameters: nil, alter_description: nil, **rest)
-    super(alter_method: alter_method, alter_parameters: alter_parameters,
-          alter_description: alter_description, **rest)
+    super
   end
 end
 
-# rubocop:disable Metrics/ClassLength
 class MqIntegrationTest < Minitest::Test
   def setup
     @config = load_integration_config
@@ -180,7 +178,7 @@ class MqIntegrationTest < Minitest::Test
 
     refute_nil result
     assert_kind_of Hash, result
-    assert contains_string_value(result, @config.qmgr_name),
+    assert contains_string_value?(result, @config.qmgr_name),
            "display_qmgr result does not contain #{@config.qmgr_name}"
   end
 
@@ -386,7 +384,7 @@ class MqIntegrationTest < Minitest::Test
 
     refute_nil result
     assert_kind_of Hash, result
-    assert contains_string_value(result, @config.qmgr_name_qm2),
+    assert contains_string_value?(result, @config.qmgr_name_qm2),
            "gateway display_qmgr does not contain #{@config.qmgr_name_qm2}"
   end
 
@@ -402,7 +400,7 @@ class MqIntegrationTest < Minitest::Test
 
     refute_nil result
     assert_kind_of Hash, result
-    assert contains_string_value(result, @config.qmgr_name),
+    assert contains_string_value?(result, @config.qmgr_name),
            "gateway display_qmgr does not contain #{@config.qmgr_name}"
   end
 
@@ -460,7 +458,7 @@ class MqIntegrationTest < Minitest::Test
 
     refute_nil result
     assert_kind_of Hash, result
-    assert contains_string_value(result, @config.qmgr_name)
+    assert contains_string_value?(result, @config.qmgr_name)
   rescue MQ::REST::Admin::Error => e
     skip "LTPA auth not supported on dev containers: #{e.message}"
   end
@@ -596,4 +594,3 @@ class MqIntegrationTest < Minitest::Test
            "#{lcase.name}: object still visible after delete"
   end
 end
-# rubocop:enable Metrics/ClassLength

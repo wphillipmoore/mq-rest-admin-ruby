@@ -1,0 +1,53 @@
+module MQ
+  module REST
+    module Admin
+      class Error < StandardError
+      end
+
+      class TransportError < Error
+        attr_reader url: String
+
+        def initialize: (String message, url: String) -> void
+      end
+
+      class ResponseError < Error
+        attr_reader response_text: String?
+
+        def initialize: (String message, ?response_text: String?) -> void
+      end
+
+      class AuthError < Error
+        attr_reader url: String
+        attr_reader status_code: Integer?
+
+        def initialize: (String message, url: String, ?status_code: Integer?) -> void
+      end
+
+      class CommandError < Error
+        attr_reader payload: Hash[String, untyped]
+        attr_reader status_code: Integer?
+
+        def initialize: (String message, payload: Hash[String, untyped], ?status_code: Integer?) -> void
+      end
+
+      class TimeoutError < Error
+        attr_reader name: String
+        attr_reader operation: String
+        attr_reader elapsed: Float
+
+        def initialize: (String message, name: String, operation: String, elapsed: Float) -> void
+      end
+
+      class MappingError < Error
+        attr_reader issues: Array[MappingIssue]
+
+        def initialize: (Array[MappingIssue] issues, ?message: String?) -> void
+        def to_payload: () -> Array[Hash[String, untyped]]
+
+        private
+
+        def build_message: () -> String
+      end
+    end
+  end
+end

@@ -1,0 +1,76 @@
+module MQ
+  module REST
+    module Admin
+      class MappingIssue
+        attr_reader direction: String
+        attr_reader reason: String
+        attr_reader attribute_name: String
+        attr_reader attribute_value: untyped
+        attr_reader object_index: Integer?
+        attr_reader qualifier: String?
+
+        def initialize: (
+          direction: String,
+          reason: String,
+          attribute_name: String,
+          ?attribute_value: untyped,
+          ?object_index: Integer?,
+          ?qualifier: String?
+        ) -> void
+
+        def self.new: (
+          direction: String,
+          reason: String,
+          attribute_name: String,
+          ?attribute_value: untyped,
+          ?object_index: Integer?,
+          ?qualifier: String?
+        ) -> MappingIssue
+
+        def to_payload: () -> Hash[String, untyped]
+
+        private
+
+        def serialize_value: (untyped value) -> untyped
+      end
+
+      module Mapping
+        extend Mapping
+
+        def map_request_attributes: (
+          String qualifier,
+          Hash[String, untyped] attributes,
+          ?strict: bool,
+          ?mapping_data: Hash[String, untyped]?
+        ) -> Hash[String, untyped]
+
+        def map_response_attributes: (
+          String qualifier,
+          Hash[String, untyped] attributes,
+          ?strict: bool,
+          ?mapping_data: Hash[String, untyped]?
+        ) -> Hash[String, untyped]
+
+        def map_response_list: (
+          String qualifier,
+          Array[Hash[String, untyped]] objects,
+          ?strict: bool,
+          ?mapping_data: Hash[String, untyped]?
+        ) -> Array[Hash[String, untyped]]
+
+        private
+
+        def get_qualifier_data: (String qualifier, ?mapping_data: Hash[String, untyped]?) -> Hash[String, untyped]?
+        def get_key_map: (Hash[String, untyped] qualifier_data, String map_name) -> Hash[String, String]
+        def get_value_map: (Hash[String, untyped] qualifier_data, String map_name) -> Hash[String, untyped]
+        def get_key_value_map: (Hash[String, untyped] qualifier_data, String map_name) -> Hash[String, untyped]
+        def handle_unknown_qualifier: (String qualifier, Hash[String, untyped] attributes, direction: String, strict: bool) -> Hash[String, untyped]
+        def handle_unknown_qualifier_list: (String qualifier, Array[Hash[String, untyped]] objects, direction: String, strict: bool) -> Array[Hash[String, untyped]]
+        def map_attributes: (qualifier: String, attributes: Hash[String, untyped], key_map: Hash[String, String], key_value_map: Hash[String, untyped], value_map: Hash[String, untyped], direction: String, strict: bool) -> Hash[String, untyped]
+        def map_attributes_internal: (qualifier: String, attributes: Hash[String, untyped], key_map: Hash[String, String], key_value_map: Hash[String, untyped], value_map: Hash[String, untyped], direction: String, object_index: Integer?) -> [Hash[String, untyped], Array[MappingIssue]]
+        def map_value: (qualifier: String, attribute_name: String, attribute_value: untyped, value_map: Hash[String, untyped], direction: String, object_index: Integer?) -> [untyped, Array[MappingIssue]]
+        def map_value_list: (qualifier: String, attribute_name: String, attribute_values: Array[untyped], value_mappings: Hash[String, untyped], direction: String, object_index: Integer?) -> [Array[untyped], Array[MappingIssue]]
+      end
+    end
+  end
+end

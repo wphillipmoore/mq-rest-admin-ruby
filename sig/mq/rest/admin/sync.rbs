@@ -1,0 +1,78 @@
+module MQ
+  module REST
+    module Admin
+      class SyncConfig
+        attr_reader timeout_seconds: Float
+        attr_reader poll_interval_seconds: Float
+
+        def self.new: (?timeout_seconds: Float, ?poll_interval_seconds: Float) -> SyncConfig
+      end
+
+      class SyncResult
+        attr_reader operation: Symbol
+        attr_reader polls: Integer
+        attr_reader elapsed_seconds: Float
+
+        def self.new: (operation: Symbol, polls: Integer, elapsed_seconds: Float) -> SyncResult
+                    | (Symbol operation, Integer polls, Float elapsed_seconds) -> SyncResult
+      end
+
+      RUNNING_VALUES: Set[String]
+      STOPPED_VALUES: Set[String]
+
+      class ObjectTypeConfig
+        attr_reader start_qualifier: String
+        attr_reader stop_qualifier: String
+        attr_reader status_qualifier: String
+        attr_reader status_keys: Array[String]
+        attr_reader empty_means_stopped: bool
+
+        def self.new: (
+          start_qualifier: String,
+          stop_qualifier: String,
+          status_qualifier: String,
+          status_keys: Array[String],
+          empty_means_stopped: bool
+        ) -> ObjectTypeConfig
+      end
+
+      CHANNEL_CONFIG: ObjectTypeConfig
+      LISTENER_CONFIG: ObjectTypeConfig
+      SERVICE_CONFIG: ObjectTypeConfig
+
+      module Sync
+        private
+
+        def mqsc_command: (
+          command: String,
+          mqsc_qualifier: String,
+          name: String?,
+          request_parameters: Hash[String, untyped]?,
+          response_parameters: Array[String]?,
+          ?where: String?
+        ) -> Array[Hash[String, untyped]]
+
+        public
+
+        def start_channel_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def stop_channel_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def restart_channel: (String name, ?config: SyncConfig?) -> SyncResult
+        def start_listener_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def stop_listener_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def restart_listener: (String name, ?config: SyncConfig?) -> SyncResult
+        def start_service_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def stop_service_sync: (String name, ?config: SyncConfig?) -> SyncResult
+        def restart_service: (String name, ?config: SyncConfig?) -> SyncResult
+
+        private
+
+        def start_and_poll: (String name, ObjectTypeConfig obj_config, SyncConfig? config) -> SyncResult
+        def stop_and_poll: (String name, ObjectTypeConfig obj_config, SyncConfig? config) -> SyncResult
+        def do_restart: (String name, ObjectTypeConfig obj_config, SyncConfig? config) -> SyncResult
+        def has_status?: (Array[Hash[String, untyped]] rows, Array[String] status_keys, Set[String] target_values) -> bool
+        def clock_now: () -> Float
+        def sleep_interval: (Float seconds) -> void
+      end
+    end
+  end
+end

@@ -3,25 +3,45 @@
 module MQ
   module REST
     module Admin
+      # @return [Array<String>] valid top-level keys in mapping override data
       VALID_TOP_LEVEL_KEYS = %w[commands qualifiers].freeze
+
+      # @return [Array<String>] valid sub-keys within qualifier override entries
       VALID_QUALIFIER_SUB_KEYS = %w[
         request_key_map request_value_map request_key_value_map
         response_key_map response_value_map
       ].freeze
 
-      # Mode for applying mapping overrides.
+      # @return [Symbol] merge mode for mapping overrides
       MAPPING_OVERRIDE_MERGE = :merge
+
+      # @return [Symbol] replace mode for mapping overrides
       MAPPING_OVERRIDE_REPLACE = :replace
 
+      # Validation and merging of mapping override data.
+      #
+      # Supports two override modes: merge (add/update individual entries)
+      # and replace (substitute the entire mapping data set).
       module MappingMerge
         module_function
 
+        # Validate the structure of mapping override data.
+        #
+        # @param overrides [Hash{String => Object}] the override data to validate
+        # @return [void]
+        # @raise [ArgumentError] if top-level or sub-keys are invalid
+        # @raise [TypeError] if values have unexpected types
         def validate_mapping_overrides(overrides)
           validate_top_level_keys(overrides)
           validate_commands_section(overrides['commands'])
           validate_qualifiers_section(overrides['qualifiers'])
         end
 
+        # Deep merge override data into a base mapping data set.
+        #
+        # @param base [Hash{String => Object}] the base mapping data
+        # @param overrides [Hash{String => Object}] the override data to merge
+        # @return [Hash{String => Object}] the merged mapping data (new copy)
         def merge_mapping_data(base, overrides)
           merged = deep_copy(base)
           merge_commands(merged, overrides['commands'])
@@ -29,10 +49,22 @@ module MQ
           merged
         end
 
+        # Create a new mapping data set from overrides only.
+        #
+        # @param overrides [Hash{String => Object}] the replacement mapping data
+        # @return [Hash{String => Object}] a deep copy of the override data
         def replace_mapping_data(overrides)
           deep_copy(overrides)
         end
 
+        # Validate that overrides cover all keys present in the base mapping.
+        #
+        # Used in replace mode to ensure the override data is complete.
+        #
+        # @param base [Hash{String => Object}] the base mapping data
+        # @param overrides [Hash{String => Object}] the replacement data
+        # @return [void]
+        # @raise [ArgumentError] if the override data is incomplete
         def validate_mapping_overrides_complete(base, overrides)
           missing_parts = []
 

@@ -6,10 +6,16 @@ require 'json'
 module MQ
   module REST
     module Admin
+      # @return [Array<String>] default response parameter list requesting all attributes
       DEFAULT_RESPONSE_PARAMETERS = ['all'].freeze
+
+      # @return [String] default CSRF token value for local connections
       DEFAULT_CSRF_TOKEN = 'local'
+
+      # @return [String] HTTP header name for gateway queue manager routing
       GATEWAY_HEADER = 'ibm-mq-rest-gateway-qmgr'
 
+      # @return [Hash{String => String}] mapping from MQSC qualifiers to mapping qualifier names
       DEFAULT_MAPPING_QUALIFIERS = {
         'QUEUE' => 'queue',
         'QLOCAL' => 'queue',
@@ -22,14 +28,62 @@ module MQ
         'QMGR' => 'qmgr'
       }.freeze
 
+      # Primary entry point for interacting with IBM MQ via the REST API.
+      #
+      # A session wraps a connection to a single queue manager and provides
+      # MQSC command execution, idempotent object configuration, and
+      # synchronous start/stop/restart operations.
+      #
+      # @example Basic usage with HTTP Basic authentication
+      #   session = Session.new(
+      #     "https://mq.example.com:9443/ibmmq/rest/v2",
+      #     "QM1",
+      #     credentials: BasicAuth.new(username: "admin", password: "secret"),
+      #     verify_tls: false
+      #   )
+      #   queues = session.display_queue
+      #
+      # @example Idempotent queue configuration
+      #   result = session.ensure_qlocal("MY.QUEUE", request_parameters: { "max_depth" => "5000" })
+      #   puts result.action  # => :created, :updated, or :unchanged
       class Session
         include Commands
         include Ensure
         include Sync
 
-        attr_reader :qmgr_name, :gateway_qmgr
-        attr_accessor :last_response_payload, :last_response_text, :last_http_status, :last_command_payload
+        # @return [String] the queue manager name
+        attr_reader :qmgr_name
 
+        # @return [String, nil] the gateway queue manager name, if routing through a gateway
+        attr_reader :gateway_qmgr
+
+        # @return [Hash{String => Object}, nil] the last parsed MQ REST response payload
+        attr_accessor :last_response_payload
+
+        # @return [String, nil] the last raw response body text
+        attr_accessor :last_response_text
+
+        # @return [Integer, nil] the last HTTP status code
+        attr_accessor :last_http_status
+
+        # @return [Hash{String => Object}, nil] the last command payload sent
+        attr_accessor :last_command_payload
+
+        # Create a new MQ REST Admin session.
+        #
+        # @param rest_base_url [String] the MQ REST API base URL
+        # @param qmgr_name [String] the queue manager name
+        # @param credentials [BasicAuth, LTPAAuth, CertificateAuth] authentication credentials
+        # @param gateway_qmgr [String, nil] optional gateway queue manager name
+        # @param verify_tls [Boolean] whether to verify TLS certificates
+        # @param timeout_seconds [Float] request timeout in seconds
+        # @param map_attributes [Boolean] whether to auto-map snake_case to MQSC attributes
+        # @param mapping_strict [Boolean] whether to raise on unknown mapping attributes
+        # @param mapping_overrides [Hash{String => Object}, nil] custom mapping data overrides
+        # @param mapping_overrides_mode [Symbol] +:merge+ or +:replace+
+        # @param csrf_token [String, nil] CSRF token for authenticated requests
+        # @param transport [NetHTTPTransport, nil] custom transport (defaults to {NetHTTPTransport})
+        # @raise [AuthError] if LTPA login fails when using {LTPAAuth} credentials
         def initialize(
           rest_base_url,
           qmgr_name,
@@ -157,7 +211,7 @@ module MQ
             headers['Cookie'] = "#{LTPA_COOKIE_NAME}=#{@ltpa_token}"
           end
           headers['ibm-mq-rest-csrf-token'] = @csrf_token unless @csrf_token.nil?
-          headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil?
+          headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil? # steep:ignore
           headers
         end
 

@@ -177,6 +177,7 @@ class MqIntegrationTest < Minitest::Test
 
   def test_display_qmgr_returns_object
     result = @session.display_qmgr
+
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value(result, @config.qmgr_name),
@@ -185,11 +186,13 @@ class MqIntegrationTest < Minitest::Test
 
   def test_display_qmstatus_returns_object_or_nil
     result = @session.display_qmstatus
+
     assert(result.nil? || result.is_a?(Hash), 'Expected nil or Hash')
   end
 
   def test_display_cmdserv_returns_object_or_nil
     result = @session.display_cmdserv
+
     assert(result.nil? || result.is_a?(Hash), 'Expected nil or Hash')
   end
 
@@ -200,6 +203,7 @@ class MqIntegrationTest < Minitest::Test
   SEEDED_QUEUES.each do |queue_name|
     define_method(:"test_display_seeded_queue_#{queue_name.downcase.tr('.', '_')}") do
       results = @session.display_queue(name: queue_name)
+
       refute_empty results, "display_queue(#{queue_name}) returned empty"
       assert any_contains_value(results, queue_name),
              "display_queue results do not contain #{queue_name}"
@@ -212,6 +216,7 @@ class MqIntegrationTest < Minitest::Test
 
   def test_display_qstatus_returns_results
     results = @session.display_qstatus('DEV.QLOCAL')
+
     refute_empty results, 'display_qstatus returned empty'
     assert any_contains_value(results, 'DEV.QLOCAL'),
            'display_qstatus results do not contain DEV.QLOCAL'
@@ -224,6 +229,7 @@ class MqIntegrationTest < Minitest::Test
   SEEDED_CHANNELS.each do |channel_name|
     define_method(:"test_display_seeded_channel_#{channel_name.downcase.tr('.', '_')}") do
       results = @session.display_channel(name: channel_name)
+
       refute_empty results, "display_channel(#{channel_name}) returned empty"
       assert any_contains_value(results, channel_name),
              "display_channel results do not contain #{channel_name}"
@@ -236,24 +242,28 @@ class MqIntegrationTest < Minitest::Test
 
   def test_display_seeded_listener
     results = @session.display_listener(SEEDED_LISTENER)
+
     refute_empty results
     assert any_contains_value(results, SEEDED_LISTENER)
   end
 
   def test_display_seeded_topic
     results = @session.display_topic(SEEDED_TOPIC)
+
     refute_empty results
     assert any_contains_value(results, SEEDED_TOPIC)
   end
 
   def test_display_seeded_namelist
     results = @session.display_namelist(SEEDED_NAMELIST)
+
     refute_empty results
     assert any_contains_value(results, SEEDED_NAMELIST)
   end
 
   def test_display_seeded_process
     results = @session.display_process(SEEDED_PROCESS)
+
     refute_empty results
     assert any_contains_value(results, SEEDED_PROCESS)
   end
@@ -263,8 +273,8 @@ class MqIntegrationTest < Minitest::Test
   # -------------------------------------------------------------------------
 
   def test_mutating_object_lifecycle
-    lifecycle_cases.each do |tc|
-      run_lifecycle_case(tc)
+    lifecycle_cases.each do |lcase|
+      run_lifecycle_case(lcase)
     end
   end
 
@@ -275,6 +285,7 @@ class MqIntegrationTest < Minitest::Test
   def test_ensure_qmgr_lifecycle
     # Read current description so we can restore it.
     qmgr = @session.display_qmgr
+
     refute_nil qmgr
     original_descr = qmgr.fetch('description', '')
 
@@ -282,10 +293,12 @@ class MqIntegrationTest < Minitest::Test
 
     # Alter to test value.
     result = @session.ensure_qmgr(request_parameters: { 'description' => test_descr })
+
     assert_includes %i[updated unchanged], result.action
 
     # Unchanged (same attributes).
     result = @session.ensure_qmgr(request_parameters: { 'description' => test_descr })
+
     assert_equal :unchanged, result.action
 
     # Restore original description.
@@ -303,14 +316,17 @@ class MqIntegrationTest < Minitest::Test
 
     # Create.
     result = session.ensure_qlocal(TEST_ENSURE_QLOCAL, request_parameters: { 'description' => 'ensure test' })
+
     assert_equal :created, result.action
 
     # Unchanged (same attributes).
     result = session.ensure_qlocal(TEST_ENSURE_QLOCAL, request_parameters: { 'description' => 'ensure test' })
+
     assert_equal :unchanged, result.action
 
     # Updated (different attribute).
     result = session.ensure_qlocal(TEST_ENSURE_QLOCAL, request_parameters: { 'description' => 'ensure updated' })
+
     assert_equal :updated, result.action
 
     # Cleanup.
@@ -331,6 +347,7 @@ class MqIntegrationTest < Minitest::Test
       TEST_ENSURE_CHANNEL,
       request_parameters: { 'channel_type' => 'SVRCONN', 'description' => 'ensure test' }
     )
+
     assert_equal :created, result.action
 
     # Unchanged.
@@ -338,6 +355,7 @@ class MqIntegrationTest < Minitest::Test
       TEST_ENSURE_CHANNEL,
       request_parameters: { 'channel_type' => 'SVRCONN', 'description' => 'ensure test' }
     )
+
     assert_equal :unchanged, result.action
 
     # Updated.
@@ -345,6 +363,7 @@ class MqIntegrationTest < Minitest::Test
       TEST_ENSURE_CHANNEL,
       request_parameters: { 'channel_type' => 'SVRCONN', 'description' => 'ensure updated' }
     )
+
     assert_equal :updated, result.action
 
     # Cleanup.
@@ -364,6 +383,7 @@ class MqIntegrationTest < Minitest::Test
     )
 
     result = session.display_qmgr
+
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value(result, @config.qmgr_name_qm2),
@@ -379,6 +399,7 @@ class MqIntegrationTest < Minitest::Test
     )
 
     result = session.display_qmgr
+
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value(result, @config.qmgr_name),
@@ -394,6 +415,7 @@ class MqIntegrationTest < Minitest::Test
     )
 
     results = session.display_queue(name: 'DEV.QLOCAL')
+
     refute_empty results
     assert any_contains_value(results, 'DEV.QLOCAL')
   end
@@ -418,7 +440,7 @@ class MqIntegrationTest < Minitest::Test
     @session.display_qmgr
 
     refute_nil @session.last_http_status, 'last_http_status should not be nil'
-    assert @session.last_http_status.positive?, 'last_http_status should be positive'
+    assert_predicate @session.last_http_status, :positive?, 'last_http_status should be positive'
     refute_nil @session.last_response_text, 'last_response_text should not be nil'
     refute_empty @session.last_response_text, 'last_response_text should not be empty'
   end
@@ -435,6 +457,7 @@ class MqIntegrationTest < Minitest::Test
     )
 
     result = session.display_qmgr
+
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value(result, @config.qmgr_name)
@@ -534,39 +557,43 @@ class MqIntegrationTest < Minitest::Test
     ]
   end
 
-  def run_lifecycle_case(tc) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  def run_lifecycle_case(lcase)
     # Define.
-    invoke_method(@session, tc.define_method, tc.object_name, request_parameters: tc.define_parameters)
+    invoke_method(@session, lcase.define_method, lcase.object_name, request_parameters: lcase.define_parameters)
 
     # Display and verify.
-    display_result = invoke_method(@session, tc.display_method, tc.object_name)
-    assert find_matching_object(display_result, tc.object_name),
-           "#{tc.name}: display after define did not contain #{tc.object_name}"
+    display_result = invoke_method(@session, lcase.display_method, lcase.object_name)
+
+    assert find_matching_object(display_result, lcase.object_name),
+           "#{lcase.name}: display after define did not contain #{lcase.object_name}"
 
     # Alter (if applicable).
-    if tc.alter_method
-      invoke_method(@session, tc.alter_method, tc.object_name, request_parameters: tc.alter_parameters)
-      updated = invoke_method(@session, tc.display_method, tc.object_name)
-      if tc.alter_description
-        matched = find_matching_object(updated, tc.object_name)
-        assert matched, "#{tc.name}: display after alter did not contain #{tc.object_name}"
+    if lcase.alter_method
+      invoke_method(@session, lcase.alter_method, lcase.object_name, request_parameters: lcase.alter_parameters)
+      updated = invoke_method(@session, lcase.display_method, lcase.object_name)
+      if lcase.alter_description
+        matched = find_matching_object(updated, lcase.object_name)
+
+        assert matched, "#{lcase.name}: display after alter did not contain #{lcase.object_name}"
         desc = get_attribute_case_insensitive(matched, 'description') ||
                get_attribute_case_insensitive(matched, 'DESCR')
-        assert_equal tc.alter_description, desc, "#{tc.name}: alter description mismatch"
+
+        assert_equal lcase.alter_description, desc, "#{lcase.name}: alter description mismatch"
       end
     end
 
     # Delete.
-    invoke_method(@session, tc.delete_method, tc.object_name)
+    invoke_method(@session, lcase.delete_method, lcase.object_name)
 
     # Verify deletion.
     begin
-      deleted = invoke_method(@session, tc.display_method, tc.object_name)
+      deleted = invoke_method(@session, lcase.display_method, lcase.object_name)
     rescue MQ::REST::Admin::Error
       return # Error on display after delete is acceptable.
     end
-    refute find_matching_object(deleted, tc.object_name),
-           "#{tc.name}: object still visible after delete"
+
+    refute find_matching_object(deleted, lcase.object_name),
+           "#{lcase.name}: object still visible after delete"
   end
 end
 # rubocop:enable Metrics/ClassLength

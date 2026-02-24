@@ -1,0 +1,34 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: "deploy: docs"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Deploy docs
+        uses: wphillipmoore/standard-actions/actions/docs-deploy@develop
+        with:
+          version-command: >-
+            ruby -e "require_relative 'lib/mq/rest/admin/version';
+            v = MQ::REST::Admin::VERSION;
+            puts v.split('.')[0..1].join('.')"
+          checkout-common: "true"

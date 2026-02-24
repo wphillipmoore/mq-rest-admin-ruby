@@ -1,0 +1,129 @@
+name: Publish release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  attestations: write
+  contents: write
+  id-token: write
+  pull-requests: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: "publish: release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Extract version
+        id: version
+        run: |
+          version=$(ruby -e "require_relative 'lib/mq/rest/admin/version'; puts MQ::REST::Admin::VERSION")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag already exists
+        id: tag_check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check if gem already on RubyGems
+        id: gem_check
+        run: |
+          status=$(ruby -e "
+            require 'net/http'
+            require 'uri'
+            uri = URI('https://rubygems.org/api/v1/versions/mq-rest-admin.json')
+            res = Net::HTTP.get_response(uri)
+            if res.code == '200'
+              require 'json'
+              versions = JSON.parse(res.body).map { |v| v['number'] }
+              puts versions.include?('${{ steps.version.outputs.version }}') ? 'exists' : 'not_found'
+            else
+              puts 'not_found'
+            end
+          ")
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+
+      - name: Build gem
+        if: steps.gem_check.outputs.status == 'not_found'
+        run: |
+          mkdir -p dist
+          gem build mq-rest-admin.gemspec -o dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem
+
+      - name: Attest build provenance
+        if: steps.gem_check.outputs.status == 'not_found'
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: "dist/*"
+
+      - name: Publish to RubyGems
+        if: steps.gem_check.outputs.status == 'not_found'
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: gem push dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem
+
+      - name: Generate SBOM
+        if: steps.gem_check.outputs.status == 'not_found'
+        uses: wphillipmoore/standard-actions/actions/security/trivy@develop
+        with:
+          scan-type: sbom
+          output-file: dist/mq-rest-admin-${{ steps.version.outputs.version }}.cdx.json
+
+      - name: Tag and release
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: wphillipmoore/standard-actions/actions/publish/tag-and-release@develop
+        with:
+          version: ${{ steps.version.outputs.version }}
+          release-title: mq-rest-admin
+          release-notes: |
+            ## Installation
+
+            ```bash
+            gem install mq-rest-admin -v ${{ steps.version.outputs.version }}
+            ```
+
+            ## Links
+
+            - [RubyGems](https://rubygems.org/gems/mq-rest-admin/versions/${{ steps.version.outputs.version }})
+            - [Documentation](https://wphillipmoore.github.io/mq-rest-admin-ruby/)
+          release-artifacts: dist/*
+
+      - name: Generate app token for bump PR
+        if: steps.tag_check.outputs.exists == 'false'
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Version bump PR
+        if: steps.tag_check.outputs.exists == 'false'
+        uses: wphillipmoore/standard-actions/actions/publish/version-bump-pr@develop
+        with:
+          current-version: ${{ steps.version.outputs.version }}
+          version-file: lib/mq/rest/admin/version.rb
+          version-regex: "(VERSION\\s*=\\s*').*(')"
+          version-replacement: "\\g<1>{version}\\2"
+          develop-version-command: ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"
+          app-token: ${{ steps.app-token.outputs.token }}

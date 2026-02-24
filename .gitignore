@@ -45,6 +45,7 @@ Gemfile.lock
 /_yardoc/
 /doc/
 /rdoc/
+doc/yard/
 
 # RuboCop remote config cache
 .rubocop-https?--*

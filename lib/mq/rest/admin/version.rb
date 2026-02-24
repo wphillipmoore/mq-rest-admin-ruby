@@ -3,7 +3,7 @@
 module MQ
   module REST
     module Admin
-      VERSION = '0.1.0'
+      VERSION = '1.2.0'
     end
   end
 end

@@ -189,12 +189,15 @@ jobs:
       matrix:
         include:
           - ruby-version: "3.2"
+            project-suffix: "3-2"
             qm1-rest-port: "9459"
             qm2-rest-port: "9460"
           - ruby-version: "3.3"
+            project-suffix: "3-3"
             qm1-rest-port: "9461"
             qm2-rest-port: "9462"
           - ruby-version: "3.4"
+            project-suffix: "3-4"
             qm1-rest-port: "9463"
             qm2-rest-port: "9464"
 
@@ -218,7 +221,7 @@ jobs:
         if: needs.docs-only.outputs.docs-only != 'true'
         uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
         with:
-          project-name: mq-rest-admin-ruby-${{ matrix.ruby-version }}
+          project-name: mq-rest-admin-ruby-${{ matrix.project-suffix }}
           qm1-rest-port: ${{ matrix.qm1-rest-port }}
           qm2-rest-port: ${{ matrix.qm2-rest-port }}
 

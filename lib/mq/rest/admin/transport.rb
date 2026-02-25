@@ -9,16 +9,36 @@ module MQ
   module REST
     module Admin
       # Container for the raw HTTP response returned by a transport.
+      #
+      # @!attribute [r] status_code
+      #   @return [Integer] the HTTP status code
+      # @!attribute [r] body
+      #   @return [String] the response body
+      # @!attribute [r] headers
+      #   @return [Hash{String => String}] the response headers
       TransportResponse = Data.define(:status_code, :body, :headers)
 
       # Default transport implementation using Net::HTTP.
-      # Duck type contract: #post_json(url, payload, headers:, timeout_seconds:, verify_tls:)
+      #
+      # Implements the duck-type transport contract:
+      # +#post_json(url, payload, headers:, timeout_seconds:, verify_tls:)+
       class NetHTTPTransport
+        # @param client_cert [String, nil] path to client certificate for mTLS
+        # @param client_key [String, nil] path to client private key for mTLS
         def initialize(client_cert: nil, client_key: nil)
           @client_cert = client_cert
           @client_key = client_key
         end
 
+        # Send a JSON POST request and return the response.
+        #
+        # @param url [String] the target URL
+        # @param payload [Hash{String => Object}] the JSON request body
+        # @param headers [Hash{String => String}] additional HTTP headers
+        # @param timeout_seconds [Float, nil] request timeout in seconds
+        # @param verify_tls [Boolean] whether to verify TLS certificates
+        # @return [TransportResponse] the HTTP response
+        # @raise [TransportError] if the request fails at the network level
         def post_json(url, payload, headers:, timeout_seconds:, verify_tls:)
           uri = URI.parse(url)
           http = build_http(uri, timeout_seconds: timeout_seconds, verify_tls: verify_tls)
@@ -41,7 +61,7 @@ module MQ
         private
 
         def build_http(uri, timeout_seconds:, verify_tls:)
-          http = Net::HTTP.new(uri.host, uri.port)
+          http = Net::HTTP.new(uri.host, uri.port) # steep:ignore
           http.use_ssl = (uri.scheme == 'https')
           http.verify_mode = verify_tls ? OpenSSL::SSL::VERIFY_PEER : OpenSSL::SSL::VERIFY_NONE
 

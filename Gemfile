@@ -11,6 +11,9 @@ group :development, :test do
   gem 'rubocop', '~> 1.72'
   gem 'rubocop-minitest', '~> 0.36'
   gem 'rubocop-rake', '~> 0.6'
+  gem 'rubocop-yard', '~> 0.9'
   gem 'simplecov', '~> 0.22', require: false
+  gem 'steep', '~> 1.9'
   gem 'webrick', '~> 1.9'
+  gem 'yard', '~> 0.9'
 end

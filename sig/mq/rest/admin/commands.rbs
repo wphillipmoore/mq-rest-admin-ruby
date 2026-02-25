@@ -1,0 +1,205 @@
+module MQ
+  module REST
+    module Admin
+      # Type aliases for command method signatures.
+      type request_params = Hash[String, untyped]?
+      type response_params = Array[String]?
+      type object_hash = Hash[String, untyped]
+
+      module Commands
+        private
+
+        def mqsc_command: (
+          command: String,
+          mqsc_qualifier: String,
+          name: String?,
+          request_parameters: Hash[String, untyped]?,
+          response_parameters: Array[String]?,
+          ?where: String?
+        ) -> Array[Hash[String, untyped]]
+
+        public
+
+        # --- Singleton display commands (return single object or nil) ---
+
+        def display_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> object_hash?
+        def display_qmstatus: (?request_parameters: request_params, ?response_parameters: response_params) -> object_hash?
+        def display_cmdserv: (?request_parameters: request_params, ?response_parameters: response_params) -> object_hash?
+
+        # --- Collection display commands (positional name, return array) ---
+
+        def display_apstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_archive: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_authinfo: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_authrec: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_authserv: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_cfstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_cfstruct: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_chinit: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_chlauth: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_chstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_clusqmgr: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_comminfo: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_conn: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_entauth: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_group: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_listener: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_log: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_lsstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_maxsmsgs: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_namelist: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_policy: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_process: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_pubsub: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_qstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_sbstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_security: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_service: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_smds: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_smdsconn: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_stgclass: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_sub: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_svstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_system: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_tcluster: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_thread: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_topic: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_tpstatus: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_trace: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_usage: (String name, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+
+        # --- Collection display commands (optional keyword name, return array) ---
+
+        def display_queue: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+        def display_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params, ?where: String?) -> Array[object_hash]
+
+        # --- Define commands (positional name, return nil) ---
+
+        def define_qlocal: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_qremote: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_qalias: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_qmodel: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_channel: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        # --- Delete commands (positional name, return nil) ---
+
+        def delete_queue: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_channel: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        # --- Action commands (optional keyword name, return nil) ---
+
+        def alter_authinfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_buffpool: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_comminfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_namelist: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_security: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_smds: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_stgclass: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_sub: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_topic: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_trace: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def archive_log: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def backup_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def clear_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def clear_topicstr: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def define_authinfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_buffpool: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_comminfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_log: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_maxsmsgs: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_namelist: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_stgclass: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_sub: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def define_topic: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def delete_authinfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_authrec: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_buffpool: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_comminfo: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_namelist: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_policy: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qalias: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qmodel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qremote: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_stgclass: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_sub: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_topic: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def move_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def ping_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def ping_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def purge_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def recover_bsds: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def recover_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def refresh_cluster: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def refresh_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def refresh_security: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def reset_cfstruct: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_cluster: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_qstats: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_smds: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def reset_tpipe: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def resolve_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def resolve_indoubt: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def resume_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def rverify_security: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def set_archive: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def set_authrec: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def set_chlauth: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def set_log: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def set_policy: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def set_system: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def start_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_chinit: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_cmdserv: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_smdsconn: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def start_trace: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def stop_channel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_chinit: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_cmdserv: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_conn: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_smdsconn: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def stop_trace: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+
+        def suspend_qmgr: (?request_parameters: request_params, ?response_parameters: response_params) -> nil
+      end
+    end
+  end
+end

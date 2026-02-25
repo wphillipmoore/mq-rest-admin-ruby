@@ -1,0 +1,32 @@
+module MQ
+  module REST
+    module Admin
+      class TransportResponse
+        attr_reader status_code: Integer
+        attr_reader body: String
+        attr_reader headers: Hash[String, String]
+
+        def self.new: (status_code: Integer, body: String, headers: Hash[String, String]) -> TransportResponse
+                    | (Integer status_code, String body, Hash[String, String] headers) -> TransportResponse
+      end
+
+      class NetHTTPTransport
+        def initialize: (?client_cert: String?, ?client_key: String?) -> void
+
+        def post_json: (
+          String url,
+          Hash[String, untyped] payload,
+          headers: Hash[String, String],
+          timeout_seconds: Float?,
+          verify_tls: bool
+        ) -> TransportResponse
+
+        private
+
+        def build_http: (URI::Generic uri, timeout_seconds: Float?, verify_tls: bool) -> Net::HTTP
+        def build_request: (URI::Generic uri, Hash[String, untyped] payload, Hash[String, String] headers) -> Net::HTTP::Post
+        def extract_headers: (Net::HTTPResponse response) -> Hash[String, String]
+      end
+    end
+  end
+end

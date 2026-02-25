@@ -1,0 +1,30 @@
+module MQ
+  module REST
+    module Admin
+      VALID_TOP_LEVEL_KEYS: Array[String]
+      VALID_QUALIFIER_SUB_KEYS: Array[String]
+      MAPPING_OVERRIDE_MERGE: Symbol
+      MAPPING_OVERRIDE_REPLACE: Symbol
+
+      module MappingMerge
+        extend MappingMerge
+
+        def validate_mapping_overrides: (Hash[String, untyped] overrides) -> void
+        def merge_mapping_data: (Hash[String, untyped] base, Hash[String, untyped] overrides) -> Hash[String, untyped]
+        def replace_mapping_data: (Hash[String, untyped] overrides) -> Hash[String, untyped]
+        def validate_mapping_overrides_complete: (Hash[String, untyped] base, Hash[String, untyped] overrides) -> void
+
+        private
+
+        def validate_top_level_keys: (Hash[String, untyped] overrides) -> void
+        def validate_commands_section: (untyped commands) -> void
+        def validate_qualifiers_section: (untyped qualifiers) -> void
+        def validate_qualifier_entry: (String qualifier_key, Hash[String, untyped] entry) -> void
+        def merge_commands: (Hash[String, untyped] merged, untyped override_commands) -> void
+        def merge_qualifiers: (Hash[String, untyped] merged, untyped override_qualifiers) -> void
+        def merge_single_qualifier: (Hash[String, untyped] base_qualifiers, String key, Hash[String, untyped] entry) -> void
+        def deep_copy: (untyped obj) -> untyped
+      end
+    end
+  end
+end

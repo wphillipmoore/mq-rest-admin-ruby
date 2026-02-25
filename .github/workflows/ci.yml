@@ -118,6 +118,31 @@ jobs:
         if: needs.docs-only.outputs.docs-only != 'true'
         run: bundle exec rake test
 
+  type-check:
+    name: "test: type-check"
+    runs-on: ubuntu-latest
+    needs: docs-only
+
+    steps:
+      - name: Docs-only short-circuit
+        if: needs.docs-only.outputs.docs-only == 'true'
+        run: echo "Docs-only changes detected; skipping type-check."
+
+      - name: Checkout code
+        if: needs.docs-only.outputs.docs-only != 'true'
+        uses: actions/checkout@v6
+
+      - name: Set up Ruby
+        if: needs.docs-only.outputs.docs-only != 'true'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+
+      - name: Run Steep type check
+        if: needs.docs-only.outputs.docs-only != 'true'
+        run: bundle exec steep check
+
   codeql:
     name: "security: codeql"
     runs-on: ubuntu-latest

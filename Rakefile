@@ -17,4 +17,9 @@ end
 
 RuboCop::RakeTask.new
 
-task default: %i[rubocop test]
+desc 'Run Steep type checking'
+task :steep do
+  sh 'bundle exec steep check'
+end
+
+task default: %i[rubocop steep test]

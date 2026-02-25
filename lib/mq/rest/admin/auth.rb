@@ -4,29 +4,56 @@ require 'cgi'
 
 module MQ
   module REST
+    # Authentication types and LTPA login support.
     module Admin
       # HTTP Basic authentication credentials.
+      #
+      # @example
+      #   creds = BasicAuth.new(username: "admin", password: "secret")
       BasicAuth = Data.define(:username, :password)
 
       # LTPA token-based authentication credentials.
+      #
       # The session performs an LTPA login at construction time and uses
       # the returned LtpaToken2 cookie for subsequent requests.
+      #
+      # @example
+      #   creds = LTPAAuth.new(username: "admin", password: "secret")
       LTPAAuth = Data.define(:username, :password)
 
       # Mutual TLS (mTLS) client certificate authentication.
+      #
       # The client certificate is configured on the transport layer.
       # No Authorization header is sent.
+      #
+      # @example
+      #   creds = CertificateAuth.new(cert_path: "/path/to/cert.pem")
       CertificateAuth = Data.define(:cert_path, :key_path) do
+        # @param cert_path [String] path to the client certificate file
+        # @param key_path [String, nil] path to the private key file
         def initialize(cert_path:, key_path: nil)
           super
         end
       end
 
+      # @return [String] the LTPA cookie name used for token-based authentication
       LTPA_COOKIE_NAME = 'LtpaToken2'
+
+      # @return [String] the REST API login path for LTPA authentication
       LTPA_LOGIN_PATH = '/login'
 
       module_function
 
+      # Perform an LTPA login and return the session token.
+      #
+      # @param transport [NetHTTPTransport] the HTTP transport to use
+      # @param rest_base_url [String] the MQ REST API base URL
+      # @param credentials [LTPAAuth] the LTPA credentials
+      # @param csrf_token [String, nil] the CSRF token to include
+      # @param timeout_seconds [Float] request timeout in seconds
+      # @param verify_tls [Boolean] whether to verify TLS certificates
+      # @return [String] the LTPA session token
+      # @raise [AuthError] if login fails or no token is returned
       def perform_ltpa_login(transport, rest_base_url, credentials, csrf_token:, timeout_seconds:, verify_tls:)
         login_url = "#{rest_base_url}#{LTPA_LOGIN_PATH}"
         headers = { 'Accept' => 'application/json' }
@@ -56,6 +83,10 @@ module MQ
         token
       end
 
+      # Extract the LtpaToken2 value from HTTP response headers.
+      #
+      # @param headers [Hash{String => String}] the HTTP response headers
+      # @return [String, nil] the LTPA token value, or nil if not found
       def extract_ltpa_token(headers)
         set_cookie = headers['Set-Cookie'] || headers['set-cookie']
         return nil if set_cookie.nil? || set_cookie.empty?

@@ -23,6 +23,21 @@ module MQ
       end
 
       class NetHTTPTransportTest < Minitest::Test
+        def create_self_signed_cert
+          require 'openssl'
+          key = OpenSSL::PKey::RSA.new(2048)
+          cert = OpenSSL::X509::Certificate.new
+          cert.version = 2
+          cert.serial = 1
+          cert.subject = OpenSSL::X509::Name.new([%w[CN test]])
+          cert.issuer = cert.subject
+          cert.not_before = Time.now
+          cert.not_after = Time.now + 3600
+          cert.public_key = key.public_key
+          cert.sign(key, OpenSSL::Digest.new('SHA256'))
+          [cert, key]
+        end
+
         def setup
           @server = WEBrick::HTTPServer.new(
             Port: 0,
@@ -174,19 +189,8 @@ module MQ
         end
 
         def test_client_cert_and_key
-          require 'openssl'
           require 'tempfile'
-
-          key = OpenSSL::PKey::RSA.new(2048)
-          cert = OpenSSL::X509::Certificate.new
-          cert.version = 2
-          cert.serial = 1
-          cert.subject = OpenSSL::X509::Name.new([%w[CN test]])
-          cert.issuer = cert.subject
-          cert.not_before = Time.now
-          cert.not_after = Time.now + 3600
-          cert.public_key = key.public_key
-          cert.sign(key, OpenSSL::Digest.new('SHA256'))
+          cert, key = create_self_signed_cert
 
           cert_file = Tempfile.new(['cert', '.pem'])
           key_file = Tempfile.new(['key', '.pem'])
@@ -213,19 +217,8 @@ module MQ
         end
 
         def test_client_cert_without_key
-          require 'openssl'
           require 'tempfile'
-
-          key = OpenSSL::PKey::RSA.new(2048)
-          cert = OpenSSL::X509::Certificate.new
-          cert.version = 2
-          cert.serial = 1
-          cert.subject = OpenSSL::X509::Name.new([%w[CN test]])
-          cert.issuer = cert.subject
-          cert.not_before = Time.now
-          cert.not_after = Time.now + 3600
-          cert.public_key = key.public_key
-          cert.sign(key, OpenSSL::Digest.new('SHA256'))
+          cert, = create_self_signed_cert
 
           cert_file = Tempfile.new(['cert', '.pem'])
           begin

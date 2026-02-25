@@ -11,11 +11,11 @@ on:
         type: string
         default: '[{"ruby-version":"3.2","project-suffix":"3-2","qm1-rest-port":"9459","qm2-rest-port":"9460"},{"ruby-version":"3.3","project-suffix":"3-3","qm1-rest-port":"9461","qm2-rest-port":"9462"},{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9463","qm2-rest-port":"9464"}]'
       run-security:
-        type: boolean
-        default: true
+        type: string
+        default: 'true'
       run-release-gates:
-        type: boolean
-        default: true
+        type: string
+        default: 'true'
 
 permissions:
   contents: read
@@ -136,7 +136,7 @@ jobs:
 
   standards-compliance:
     name: "ci: standards-compliance"
-    if: ${{ inputs.run-release-gates == '' || inputs.run-release-gates == true }}
+    if: ${{ inputs.run-release-gates != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -147,7 +147,7 @@ jobs:
 
   release-gates:
     name: "release: gates"
-    if: ${{ inputs.run-release-gates == '' || inputs.run-release-gates == true }}
+    if: ${{ inputs.run-release-gates != 'false' }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/wphillipmoore/dev-ruby:3.4
@@ -179,7 +179,7 @@ jobs:
 
   codeql:
     name: "security: codeql"
-    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
+    if: ${{ inputs.run-security != 'false' }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -194,7 +194,7 @@ jobs:
 
   trivy:
     name: "security: trivy"
-    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
+    if: ${{ inputs.run-security != 'false' }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -209,7 +209,7 @@ jobs:
 
   semgrep:
     name: "security: semgrep"
-    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
+    if: ${{ inputs.run-security != 'false' }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write

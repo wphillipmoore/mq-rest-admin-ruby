@@ -18,5 +18,5 @@ jobs:
     with:
       ruby-versions: '["3.4"]'
       integration-matrix: '[{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9463","qm2-rest-port":"9464"}]'
-      run-security: false
-      run-release-gates: false
+      run-security: 'false'
+      run-release-gates: 'false'

@@ -82,6 +82,32 @@ bundle exec rake test        # Run unit tests
 bundle exec rubocop          # Run linter
 ```
 
+### Docker-First Testing
+
+All tests can run inside containers — Docker is the only host prerequisite.
+The `dev-ruby:3.4` image is built from `../standard-tooling/docker/ruby/`.
+
+```bash
+# Build the dev image (one-time, from standard-tooling)
+cd ../standard-tooling && docker/build.sh
+
+# Run unit tests in container
+./scripts/dev/test.sh
+
+# Run integration tests (requires MQ containers running)
+./scripts/dev/mq_start.sh
+./scripts/dev/mq_seed.sh
+./scripts/dev/test-integration.sh
+./scripts/dev/mq_stop.sh
+```
+
+Environment overrides:
+
+- `DOCKER_DEV_IMAGE` — override the container image (default: `dev-ruby:3.4`)
+- `DOCKER_TEST_CMD` — override the test command
+- `DOCKER_NETWORK` — join a Docker network (set automatically by
+  `test-integration.sh`)
+
 ### Local MQ Container
 
 The MQ development environment is owned by the

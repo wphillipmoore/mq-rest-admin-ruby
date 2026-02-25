@@ -10,8 +10,7 @@ if [ ! -d "$mq_dev_env" ]; then
   exit 1
 fi
 
-# shellcheck disable=SC1083  # {{PROJECT_NAME}} is a template placeholder
-export COMPOSE_PROJECT_NAME="{{PROJECT_NAME}}"
+export COMPOSE_PROJECT_NAME="mq-dev"
 
 cd "$mq_dev_env"
 exec scripts/mq_stop.sh

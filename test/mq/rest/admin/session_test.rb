@@ -295,9 +295,9 @@ module MQ
           # display commands should have responseParameters but no parameters
           refute payload.key?('parameters')
         end
+      end
 
-        # --- Mapping-enabled tests ---
-
+      class SessionMappingTest < Minitest::Test
         def test_map_attributes_enabled
           body = Admin.build_response([{ 'DESCR' => 'test queue' }])
           session, = Admin.build_test_session(
@@ -669,9 +669,9 @@ module MQ
 
           assert_kind_of Array, result
         end
+      end
 
-        # --- Private method coverage for hard-to-reach paths ---
-
+      class SessionInternalsTest < Minitest::Test
         def test_resolve_mapping_qualifier_downcase_fallback
           transport = MockTransport.new
           session = Session.new(

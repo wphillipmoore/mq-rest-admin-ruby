@@ -18,12 +18,10 @@ Metrics/AbcSize:
   Max: 30
   CountRepeatedAttributes: false
   Exclude:
-    - "test/**/*"
     - "lib/mq/rest/admin/session.rb"
 
 Metrics/BlockLength:
   Exclude:
-    - "test/**/*"
     - "lib/mq/rest/admin/mapping.rb"
 
 Metrics/BlockNesting:
@@ -37,7 +35,6 @@ Metrics/ClassLength:
     - array
     - hash
   Exclude:
-    - "test/**/*"
     - "lib/mq/rest/admin/session.rb"
 
 Metrics/CyclomaticComplexity:
@@ -50,7 +47,6 @@ Metrics/MethodLength:
     - array
     - hash
   Exclude:
-    - "test/**/*"
     - "lib/mq/rest/admin/session.rb"
     - "lib/mq/rest/admin/mapping.rb"
 

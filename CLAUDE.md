@@ -94,6 +94,15 @@ cd ../standard-tooling && docker/build.sh
 # Run unit tests in container
 ./scripts/dev/test.sh
 
+# Run linter in container
+./scripts/dev/lint.sh
+
+# Run type checker in container
+./scripts/dev/typecheck.sh
+
+# Run dependency audit in container
+./scripts/dev/audit.sh
+
 # Run integration tests (requires MQ containers running)
 ./scripts/dev/mq_start.sh
 ./scripts/dev/mq_seed.sh

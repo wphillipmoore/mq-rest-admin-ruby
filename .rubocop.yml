@@ -1,5 +1,6 @@
 plugins:
   - rubocop-minitest
+  - rubocop-performance
   - rubocop-rake
 
 require:
@@ -14,7 +15,11 @@ Layout/LineLength:
   Max: 120
 
 Metrics/AbcSize:
-  Enabled: false
+  Max: 30
+  CountRepeatedAttributes: false
+  Exclude:
+    - "test/**/*"
+    - "lib/mq/rest/admin/session.rb"
 
 Metrics/BlockLength:
   Exclude:
@@ -25,29 +30,53 @@ Metrics/BlockNesting:
   Exclude:
     - "lib/mq/rest/admin/mapping.rb"
 
+Metrics/ClassLength:
+  Max: 250
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
+  Exclude:
+    - "test/**/*"
+    - "lib/mq/rest/admin/session.rb"
+
+Metrics/CyclomaticComplexity:
+  Max: 12
+
+Metrics/MethodLength:
+  Max: 30
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
+  Exclude:
+    - "test/**/*"
+    - "lib/mq/rest/admin/session.rb"
+    - "lib/mq/rest/admin/mapping.rb"
+
+Metrics/ModuleLength:
+  Max: 200
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
+  Exclude:
+    - "lib/mq/rest/admin/commands.rb"
+
+Metrics/ParameterLists:
+  Max: 5
+  CountKeywordArgs: false
+
+Metrics/PerceivedComplexity:
+  Max: 12
+
 Minitest/MultipleAssertions:
   Enabled: false
 
 Naming/PredicatePrefix:
-  Enabled: false
-
-Metrics/ClassLength:
-  Enabled: false
-
-Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Metrics/ModuleLength:
-  Enabled: false
-
-Metrics/ParameterLists:
-  Max: 12
-
-Metrics/PerceivedComplexity:
-  Enabled: false
+  AllowedMethods:
+    - has_error_codes?
+    - has_status?
 
 Style/Documentation:
   Enabled: true

@@ -131,19 +131,22 @@ jobs:
           bundle exec rake integration
 
   # ---------------------------------------------------------------------------
-  # Standards and release gates (PR only)
+  # Security and standards (shared reusable workflow)
   # ---------------------------------------------------------------------------
 
-  standards-compliance:
-    name: "ci: standards-compliance"
-    if: ${{ inputs.run-release-gates != 'false' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+  security-and-standards:
+    name: "security-and-standards"
+    if: ${{ inputs.run-security != 'false' }}
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@develop
+    with:
+      language: ruby
+    permissions:
+      contents: read
+      security-events: write
 
-      - name: Validate standards
-        uses: wphillipmoore/standard-actions/actions/standards-compliance@develop
+  # ---------------------------------------------------------------------------
+  # Release gates (PR only)
+  # ---------------------------------------------------------------------------
 
   release-gates:
     name: "release: gates"
@@ -173,51 +176,3 @@ jobs:
           head-version-command: ruby -e "require_relative 'lib/mq/rest/admin/version'; puts MQ::REST::Admin::VERSION"
           main-version-command: git show origin/main:lib/mq/rest/admin/version.rb | ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"
 
-  # ---------------------------------------------------------------------------
-  # Security scanners (PR only)
-  # ---------------------------------------------------------------------------
-
-  codeql:
-    name: "security: codeql"
-    if: ${{ inputs.run-security != 'false' }}
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Run CodeQL analysis
-        uses: wphillipmoore/standard-actions/actions/security/codeql@develop
-        with:
-          language: ruby
-
-  trivy:
-    name: "security: trivy"
-    if: ${{ inputs.run-security != 'false' }}
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Run Trivy vulnerability scan
-        uses: wphillipmoore/standard-actions/actions/security/trivy@develop
-        with:
-          scan-type: fs
-
-  semgrep:
-    name: "security: semgrep"
-    if: ${{ inputs.run-security != 'false' }}
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Run Semgrep SAST scan
-        uses: wphillipmoore/standard-actions/actions/security/semgrep@develop
-        with:
-          language: ruby

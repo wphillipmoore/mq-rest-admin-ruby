@@ -136,7 +136,7 @@ jobs:
 
   standards-compliance:
     name: "ci: standards-compliance"
-    if: ${{ inputs.run-release-gates != false }}
+    if: ${{ inputs.run-release-gates == '' || inputs.run-release-gates == true }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -147,7 +147,7 @@ jobs:
 
   release-gates:
     name: "release: gates"
-    if: ${{ inputs.run-release-gates != false }}
+    if: ${{ inputs.run-release-gates == '' || inputs.run-release-gates == true }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/wphillipmoore/dev-ruby:3.4
@@ -179,7 +179,7 @@ jobs:
 
   codeql:
     name: "security: codeql"
-    if: ${{ inputs.run-security != false }}
+    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -194,7 +194,7 @@ jobs:
 
   trivy:
     name: "security: trivy"
-    if: ${{ inputs.run-security != false }}
+    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -209,7 +209,7 @@ jobs:
 
   semgrep:
     name: "security: semgrep"
-    if: ${{ inputs.run-security != false }}
+    if: ${{ inputs.run-security == '' || inputs.run-security == true }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write

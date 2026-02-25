@@ -70,6 +70,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Mark workspace safe for git
+        if: github.event_name == 'pull_request'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Version divergence gate (PRs targeting develop)
         if: github.event_name == 'pull_request' && github.base_ref == 'develop'
         uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@develop
@@ -95,6 +99,10 @@ jobs:
       - name: Checkout code
         if: needs.docs-only.outputs.docs-only != 'true'
         uses: actions/checkout@v6
+
+      - name: Mark workspace safe for git
+        if: needs.docs-only.outputs.docs-only != 'true'
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Fetch base branch for version checks
         if: github.event_name == 'pull_request' && needs.docs-only.outputs.docs-only != 'true'

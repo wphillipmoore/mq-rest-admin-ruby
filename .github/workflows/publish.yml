@@ -19,6 +19,8 @@ jobs:
   publish:
     name: "publish: release"
     runs-on: ubuntu-latest
+    env:
+      HAS_RUBYGEMS_KEY: ${{ secrets.RUBYGEMS_API_KEY != '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -104,7 +106,7 @@ jobs:
           release-artifacts: dist/*
 
       - name: Publish to RubyGems
-        if: steps.gem_check.outputs.status == 'not_found' && secrets.RUBYGEMS_API_KEY != ''
+        if: steps.gem_check.outputs.status == 'not_found' && env.HAS_RUBYGEMS_KEY == 'true'
         env:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         run: gem push dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem

@@ -32,7 +32,6 @@ htmlcov/
 # Bundler
 /.bundle/
 /vendor/bundle
-Gemfile.lock
 
 # Test output
 /coverage/

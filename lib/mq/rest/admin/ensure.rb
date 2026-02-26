@@ -3,14 +3,31 @@
 module MQ
   module REST
     module Admin
-      # Result of an ensure operation.
+      # Result of an idempotent ensure operation.
+      #
+      # @!attribute [r] action
+      #   @return [Symbol] +:unchanged+, +:created+, or +:updated+
+      # @!attribute [r] changed
+      #   @return [Array<String>] attribute names that were changed (empty if unchanged/created)
       EnsureResult = Data.define(:action, :changed) do
+        # @param action [Symbol] the action taken
+        # @param changed [Array<String>] changed attribute names
         def initialize(action:, changed: [])
           super(action: action, changed: changed.freeze)
         end
       end
 
+      # Idempotent object configuration methods.
+      #
+      # Each +ensure_*+ method checks the current state of an MQ object and
+      # creates, updates, or leaves it unchanged to match the desired state.
+      # Included by {Session}.
       module Ensure
+        # Ensure the queue manager attributes match the desired state.
+        #
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken and any changed attributes
+        # @raise [CommandError] if the MQSC command fails
         def ensure_qmgr(request_parameters: nil)
           params = request_parameters ? request_parameters.to_h : {}
           return EnsureResult.new(action: :unchanged) if params.empty?
@@ -36,6 +53,12 @@ module MQ
           EnsureResult.new(action: :updated, changed: changed.keys)
         end
 
+        # Ensure a local queue exists with the desired attributes.
+        #
+        # @param name [String] the queue name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_qlocal(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -43,6 +66,12 @@ module MQ
           )
         end
 
+        # Ensure a remote queue exists with the desired attributes.
+        #
+        # @param name [String] the queue name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_qremote(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -50,6 +79,12 @@ module MQ
           )
         end
 
+        # Ensure an alias queue exists with the desired attributes.
+        #
+        # @param name [String] the queue name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_qalias(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -57,6 +92,12 @@ module MQ
           )
         end
 
+        # Ensure a model queue exists with the desired attributes.
+        #
+        # @param name [String] the queue name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_qmodel(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -64,6 +105,12 @@ module MQ
           )
         end
 
+        # Ensure a channel exists with the desired attributes.
+        #
+        # @param name [String] the channel name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_channel(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -71,6 +118,12 @@ module MQ
           )
         end
 
+        # Ensure an authentication information object exists with the desired attributes.
+        #
+        # @param name [String] the authinfo name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_authinfo(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -78,6 +131,12 @@ module MQ
           )
         end
 
+        # Ensure a listener exists with the desired attributes.
+        #
+        # @param name [String] the listener name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_listener(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -85,6 +144,12 @@ module MQ
           )
         end
 
+        # Ensure a namelist exists with the desired attributes.
+        #
+        # @param name [String] the namelist name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_namelist(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -92,6 +157,12 @@ module MQ
           )
         end
 
+        # Ensure a process exists with the desired attributes.
+        #
+        # @param name [String] the process name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_process(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -99,6 +170,12 @@ module MQ
           )
         end
 
+        # Ensure a service exists with the desired attributes.
+        #
+        # @param name [String] the service name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_service(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -106,6 +183,12 @@ module MQ
           )
         end
 
+        # Ensure a topic exists with the desired attributes.
+        #
+        # @param name [String] the topic name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_topic(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -113,6 +196,12 @@ module MQ
           )
         end
 
+        # Ensure a subscription exists with the desired attributes.
+        #
+        # @param name [String] the subscription name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_sub(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -120,6 +209,12 @@ module MQ
           )
         end
 
+        # Ensure a storage class exists with the desired attributes.
+        #
+        # @param name [String] the storage class name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_stgclass(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -127,6 +222,12 @@ module MQ
           )
         end
 
+        # Ensure a communication information object exists with the desired attributes.
+        #
+        # @param name [String] the comminfo name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_comminfo(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,
@@ -134,6 +235,12 @@ module MQ
           )
         end
 
+        # Ensure a CF structure exists with the desired attributes.
+        #
+        # @param name [String] the CF structure name
+        # @param request_parameters [Hash{String => Object}, nil] desired attributes
+        # @return [EnsureResult] the action taken
+        # @raise [CommandError] if the MQSC command fails
         def ensure_cfstruct(name, request_parameters: nil)
           ensure_object(
             name: name, request_parameters: request_parameters,

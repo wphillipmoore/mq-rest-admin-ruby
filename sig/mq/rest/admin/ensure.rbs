@@ -1,0 +1,57 @@
+module MQ
+  module REST
+    module Admin
+      class EnsureResult
+        attr_reader action: Symbol
+        attr_reader changed: Array[String]
+
+        def self.new: (action: Symbol, ?changed: Array[String]) -> EnsureResult
+                    | (Symbol action, Array[String] changed) -> EnsureResult
+      end
+
+      module Ensure
+        private
+
+        def mqsc_command: (
+          command: String,
+          mqsc_qualifier: String,
+          name: String?,
+          request_parameters: Hash[String, untyped]?,
+          response_parameters: Array[String]?,
+          ?where: String?
+        ) -> Array[Hash[String, untyped]]
+
+        public
+
+        def ensure_qmgr: (?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_qlocal: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_qremote: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_qalias: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_qmodel: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_channel: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_authinfo: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_listener: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_namelist: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_process: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_service: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_topic: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_sub: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_stgclass: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_comminfo: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+        def ensure_cfstruct: (String name, ?request_parameters: Hash[String, untyped]?) -> EnsureResult
+
+        private
+
+        def ensure_object: (
+          name: String,
+          request_parameters: Hash[String, untyped]?,
+          display_qualifier: String,
+          define_qualifier: String,
+          alter_qualifier: String
+        ) -> EnsureResult
+
+        def values_match?: (untyped desired, untyped current) -> bool
+      end
+    end
+  end
+end

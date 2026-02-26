@@ -1,0 +1,8 @@
+module MQ
+  module REST
+    module Admin
+      JSON_PATH: String
+      MAPPING_DATA: Hash[String, untyped]
+    end
+  end
+end

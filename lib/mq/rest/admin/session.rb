@@ -1,15 +1,18 @@
 # frozen_string_literal: true
 
-require 'base64'
-require 'json'
-
 module MQ
   module REST
     module Admin
+      # @return [Array<String>] default response parameter list requesting all attributes
       DEFAULT_RESPONSE_PARAMETERS = ['all'].freeze
+
+      # @return [String] default CSRF token value for local connections
       DEFAULT_CSRF_TOKEN = 'local'
+
+      # @return [String] HTTP header name for gateway queue manager routing
       GATEWAY_HEADER = 'ibm-mq-rest-gateway-qmgr'
 
+      # @return [Hash{String => String}] mapping from MQSC qualifiers to mapping qualifier names
       DEFAULT_MAPPING_QUALIFIERS = {
         'QUEUE' => 'queue',
         'QLOCAL' => 'queue',
@@ -22,14 +25,63 @@ module MQ
         'QMGR' => 'qmgr'
       }.freeze
 
+      # Primary entry point for interacting with IBM MQ via the REST API.
+      #
+      # A session wraps a connection to a single queue manager and provides
+      # MQSC command execution, idempotent object configuration, and
+      # synchronous start/stop/restart operations.
+      #
+      # @example Basic usage with HTTP Basic authentication
+      #   session = Session.new(
+      #     "https://mq.example.com:9443/ibmmq/rest/v2",
+      #     "QM1",
+      #     credentials: BasicAuth.new(username: "admin", password: "secret"),
+      #     verify_tls: false
+      #   )
+      #   queues = session.display_queue
+      #
+      # @example Idempotent queue configuration
+      #   result = session.ensure_qlocal("MY.QUEUE", request_parameters: { "max_depth" => "5000" })
+      #   puts result.action  # => :created, :updated, or :unchanged
       class Session
         include Commands
         include Ensure
         include Sync
+        include SessionHelpers
 
-        attr_reader :qmgr_name, :gateway_qmgr
-        attr_accessor :last_response_payload, :last_response_text, :last_http_status, :last_command_payload
+        # @return [String] the queue manager name
+        attr_reader :qmgr_name
 
+        # @return [String, nil] the gateway queue manager name, if routing through a gateway
+        attr_reader :gateway_qmgr
+
+        # @return [Hash{String => Object}, nil] the last parsed MQ REST response payload
+        attr_accessor :last_response_payload
+
+        # @return [String, nil] the last raw response body text
+        attr_accessor :last_response_text
+
+        # @return [Integer, nil] the last HTTP status code
+        attr_accessor :last_http_status
+
+        # @return [Hash{String => Object}, nil] the last command payload sent
+        attr_accessor :last_command_payload
+
+        # Create a new MQ REST Admin session.
+        #
+        # @param rest_base_url [String] the MQ REST API base URL
+        # @param qmgr_name [String] the queue manager name
+        # @param credentials [BasicAuth, LTPAAuth, CertificateAuth] authentication credentials
+        # @param gateway_qmgr [String, nil] optional gateway queue manager name
+        # @param verify_tls [Boolean] whether to verify TLS certificates
+        # @param timeout_seconds [Float] request timeout in seconds
+        # @param map_attributes [Boolean] whether to auto-map snake_case to MQSC attributes
+        # @param mapping_strict [Boolean] whether to raise on unknown mapping attributes
+        # @param mapping_overrides [Hash{String => Object}, nil] custom mapping data overrides
+        # @param mapping_overrides_mode [Symbol] +:merge+ or +:replace+
+        # @param csrf_token [String, nil] CSRF token for authenticated requests
+        # @param transport [NetHTTPTransport, nil] custom transport (defaults to {NetHTTPTransport})
+        # @raise [AuthError] if LTPA login fails when using {LTPAAuth} credentials
         def initialize(
           rest_base_url,
           qmgr_name,
@@ -111,6 +163,15 @@ module MQ
           )
           @last_command_payload = payload.dup
 
+          response_payload = execute_transport_request(payload)
+          extract_result_objects(response_payload, mapping_qualifier, do_map)
+        end
+
+        def build_mqsc_url
+          "#{@rest_base_url}/admin/action/qmgr/#{@qmgr_name}/mqsc"
+        end
+
+        def execute_transport_request(payload)
           transport_response = @transport.post_json(
             build_mqsc_url, payload,
             headers: build_headers,
@@ -123,7 +184,10 @@ module MQ
           response_payload = parse_response_payload(transport_response.body)
           @last_response_payload = response_payload
           raise_for_command_errors(response_payload, transport_response.status_code)
+          response_payload
+        end
 
+        def extract_result_objects(response_payload, mapping_qualifier, do_map)
           command_response = extract_command_response(response_payload)
           parameter_objects = command_response.map do |item|
             params = item['parameters']
@@ -143,10 +207,6 @@ module MQ
           parameter_objects
         end
 
-        def build_mqsc_url
-          "#{@rest_base_url}/admin/action/qmgr/#{@qmgr_name}/mqsc"
-        end
-
         def build_headers
           headers = { 'Accept' => 'application/json' }
           if @credentials.is_a?(BasicAuth)
@@ -157,69 +217,14 @@ module MQ
             headers['Cookie'] = "#{LTPA_COOKIE_NAME}=#{@ltpa_token}"
           end
           headers['ibm-mq-rest-csrf-token'] = @csrf_token unless @csrf_token.nil?
-          headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil?
+          headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil? # steep:ignore
           headers
-        end
-
-        def build_basic_auth_header(username, password)
-          token = Base64.strict_encode64("#{username}:#{password}")
-          "Basic #{token}"
-        end
-
-        def build_command_payload(command:, qualifier:, name:, request_parameters:, response_parameters:)
-          payload = {
-            'type' => 'runCommandJSON',
-            'command' => command,
-            'qualifier' => qualifier
-          }
-          payload['name'] = name if name && !name.empty?
-          payload['parameters'] = request_parameters unless request_parameters.empty?
-          payload['responseParameters'] = response_parameters unless response_parameters.empty?
-          payload
-        end
-
-        def normalize_response_parameters(response_parameters, is_display: true)
-          if response_parameters.nil?
-            return is_display ? DEFAULT_RESPONSE_PARAMETERS.dup : []
-          end
-
-          params = response_parameters.to_a
-          return DEFAULT_RESPONSE_PARAMETERS.dup if all_response_parameters?(params)
-
-          params
-        end
-
-        def all_response_parameters?(response_parameters)
-          response_parameters.any? { |p| p.downcase == 'all' }
-        end
-
-        def parse_response_payload(response_text)
-          decoded = JSON.parse(response_text)
-          unless decoded.is_a?(Hash)
-            raise ResponseError.new('Response payload was not a JSON object.', response_text: response_text)
-          end
-
-          decoded
-        rescue JSON::ParserError
-          raise ResponseError.new('Response body was not valid JSON.', response_text: response_text)
-        end
-
-        def extract_command_response(payload)
-          command_response = payload['commandResponse']
-          return [] if command_response.nil?
-
-          raise ResponseError, 'Response commandResponse was not a list.' unless command_response.is_a?(Array)
-
-          command_response.each do |item|
-            raise ResponseError, 'Response commandResponse item was not an object.' unless item.is_a?(Hash)
-          end
-          command_response
         end
 
         def raise_for_command_errors(payload, status_code)
           overall_cc = extract_optional_int(payload['overallCompletionCode'])
           overall_rc = extract_optional_int(payload['overallReasonCode'])
-          has_overall = has_error_codes?(overall_cc, overall_rc)
+          has_overall = error_codes?(overall_cc, overall_rc)
 
           command_issues = []
           command_response = payload['commandResponse']
@@ -229,7 +234,7 @@ module MQ
 
               cc = extract_optional_int(item['completionCode'])
               rc = extract_optional_int(item['reasonCode'])
-              next unless has_error_codes?(cc, rc)
+              next unless error_codes?(cc, rc)
 
               command_issues << "index=#{idx} completionCode=#{cc} reasonCode=#{rc}"
             end
@@ -249,34 +254,6 @@ module MQ
           )
         end
 
-        def extract_optional_int(value)
-          value.is_a?(Integer) ? value : nil
-        end
-
-        def has_error_codes?(completion_code, reason_code)
-          (completion_code && completion_code != 0) || (reason_code && reason_code != 0)
-        end
-
-        def flatten_nested_objects(parameter_objects)
-          flattened = []
-          parameter_objects.each do |item|
-            objects = item['objects']
-            if objects.is_a?(Array)
-              shared = item.except('objects')
-              objects.each do |nested|
-                flattened << shared.merge(nested) if nested.is_a?(Hash)
-              end
-            else
-              flattened << item
-            end
-          end
-          flattened
-        end
-
-        def normalize_response_attributes(attributes)
-          attributes.transform_keys(&:upcase)
-        end
-
         def resolve_mapping_qualifier(command, mqsc_qualifier)
           command_map = get_command_map(@mapping_data)
           command_key = "#{command} #{mqsc_qualifier}"
@@ -291,16 +268,11 @@ module MQ
           mqsc_qualifier.downcase
         end
 
-        def get_command_map(mapping_data)
-          commands = mapping_data['commands']
-          commands.is_a?(Hash) ? commands : {}
-        end
-
         def map_response_parameters(command, mqsc_qualifier, mapping_qualifier, response_parameters)
           return response_parameters if all_response_parameters?(response_parameters)
 
           macros = get_response_parameter_macros(command, mqsc_qualifier, mapping_data: @mapping_data)
-          macro_lookup = macros.each_with_object({}) { |m, h| h[m.downcase] = m }
+          macro_lookup = macros.to_h { |m| [m.downcase, m] }
 
           qualifier_entry = get_qualifier_entry(mapping_qualifier, mapping_data: @mapping_data)
           if qualifier_entry.nil?
@@ -317,23 +289,6 @@ module MQ
           raise MappingError, issues if @mapping_strict && !issues.empty?
 
           mapped
-        end
-
-        def get_response_parameter_macros(command, mqsc_qualifier, mapping_data:)
-          command_key = "#{command} #{mqsc_qualifier}"
-          commands = get_command_map(mapping_data)
-          entry = commands[command_key]
-          return [] unless entry.is_a?(Hash)
-
-          macros = entry['response_parameter_macros']
-          return [] unless macros.is_a?(Array)
-
-          macros.select { |m| m.is_a?(String) }
-        end
-
-        def build_unknown_qualifier_issue(qualifier)
-          [MappingIssue.new(direction: 'request', reason: 'unknown_qualifier', attribute_name: '*',
-                            qualifier: qualifier)]
         end
 
         def build_snake_to_mqsc_map(qualifier_entry)
@@ -388,36 +343,6 @@ module MQ
           end
 
           rest.empty? ? mapped_keyword : "#{mapped_keyword} #{rest}"
-        end
-
-        def map_response_parameter_names(response_parameters, macro_lookup, combined_map, mapping_qualifier)
-          mapped = []
-          issues = []
-          response_parameters.each do |name|
-            macro_key = macro_lookup[name.downcase]
-            if macro_key
-              mapped << macro_key
-              next
-            end
-            mapped_key = combined_map[name]
-            if mapped_key.nil?
-              issues << MappingIssue.new(
-                direction: 'request', reason: 'unknown_key',
-                attribute_name: name, qualifier: mapping_qualifier
-              )
-              mapped << name
-              next
-            end
-            mapped << mapped_key
-          end
-          [mapped, issues]
-        end
-
-        def get_qualifier_entry(qualifier, mapping_data:)
-          qualifiers = mapping_data['qualifiers']
-          return nil unless qualifiers.is_a?(Hash)
-
-          qualifiers[qualifier]
         end
 
         def resolve_mapping_data(overrides, mode)

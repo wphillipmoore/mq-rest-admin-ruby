@@ -1,0 +1,7 @@
+module MQ
+  module REST
+    module Admin
+      VERSION: String
+    end
+  end
+end

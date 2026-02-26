@@ -10,4 +10,12 @@ require_relative 'admin/mapping_merge'
 require_relative 'admin/commands'
 require_relative 'admin/ensure'
 require_relative 'admin/sync'
+require_relative 'admin/session_helpers'
 require_relative 'admin/session'
+
+# Top-level namespace for the MQ REST Admin library.
+module MQ
+  # REST API namespace.
+  module REST
+  end
+end

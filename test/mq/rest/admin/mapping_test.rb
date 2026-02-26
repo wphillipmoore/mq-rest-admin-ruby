@@ -163,6 +163,26 @@ module MQ
 
           assert_equal 'val', result['key']
         end
+      end
+
+      class MappingResponseTest < Minitest::Test
+        def setup
+          @mapping_data = {
+            'qualifiers' => {
+              'test_qualifier' => {
+                'request_key_map' => { 'snake_name' => 'MQSC_NAME' },
+                'request_value_map' => { 'snake_name' => { 'snake_val' => 'MQSC_VAL' } },
+                'request_key_value_map' => {
+                  'compound_attr' => {
+                    'opt_a' => { 'key' => 'MQSC_KEY_A', 'value' => 'MQSC_VALUE_A' }
+                  }
+                },
+                'response_key_map' => { 'MQSC_NAME' => 'snake_name', 'MQSC_OTHER' => 'other_name' },
+                'response_value_map' => { 'MQSC_NAME' => { 'MQSC_VAL' => 'snake_val' } }
+              }
+            }
+          }
+        end
 
         def test_map_response_key
           result = Mapping.map_response_attributes(

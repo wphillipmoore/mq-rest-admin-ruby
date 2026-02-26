@@ -1,6 +1,10 @@
 plugins:
   - rubocop-minitest
+  - rubocop-performance
   - rubocop-rake
+
+require:
+  - rubocop-yard
 
 AllCops:
   TargetRubyVersion: 3.2
@@ -11,40 +15,46 @@ Layout/LineLength:
   Max: 120
 
 Metrics/AbcSize:
-  Enabled: false
-
-Metrics/BlockLength:
-  Exclude:
-    - "test/**/*"
-    - "lib/mq/rest/admin/mapping.rb"
-
-Metrics/BlockNesting:
-  Exclude:
-    - "lib/mq/rest/admin/mapping.rb"
-
-Minitest/MultipleAssertions:
-  Enabled: false
-
-Naming/PredicatePrefix:
-  Enabled: false
+  Max: 30
+  CountRepeatedAttributes: false
 
 Metrics/ClassLength:
-  Enabled: false
+  Max: 250
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
 
 Metrics/CyclomaticComplexity:
-  Enabled: false
-
-Metrics/MethodLength:
-  Enabled: false
-
-Metrics/ModuleLength:
-  Enabled: false
-
-Metrics/ParameterLists:
   Max: 12
 
+Metrics/MethodLength:
+  Max: 30
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
+
+Metrics/ModuleLength:
+  Max: 200
+  CountAsOne:
+    - heredoc
+    - array
+    - hash
+  Exclude:
+    - "lib/mq/rest/admin/commands.rb"
+
+Metrics/ParameterLists:
+  Max: 5
+  CountKeywordArgs: false
+
 Metrics/PerceivedComplexity:
-  Enabled: false
+  Max: 12
+
+Minitest/MultipleAssertions:
+  Max: 8
 
 Style/Documentation:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - "test/**/*"

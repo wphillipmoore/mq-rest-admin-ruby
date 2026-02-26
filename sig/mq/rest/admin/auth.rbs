@@ -1,0 +1,60 @@
+module MQ
+  module REST
+    module Admin
+      class BasicAuth
+        attr_reader username: String
+        attr_reader password: String
+
+        def self.new: (username: String, password: String) -> BasicAuth
+                    | (String username, String password) -> BasicAuth
+      end
+
+      class LTPAAuth
+        attr_reader username: String
+        attr_reader password: String
+
+        def self.new: (username: String, password: String) -> LTPAAuth
+                    | (String username, String password) -> LTPAAuth
+      end
+
+      class CertificateAuth
+        attr_reader cert_path: String
+        attr_reader key_path: String?
+
+        def initialize: (cert_path: String, ?key_path: String?) -> void
+
+        def self.new: (cert_path: String, ?key_path: String?) -> CertificateAuth
+                    | (String cert_path, String? key_path) -> CertificateAuth
+      end
+
+      type credentials = BasicAuth | LTPAAuth | CertificateAuth
+
+      LTPA_COOKIE_NAME: String
+      LTPA_LOGIN_PATH: String
+
+      def self.perform_ltpa_login: (
+        NetHTTPTransport transport,
+        String rest_base_url,
+        LTPAAuth credentials,
+        csrf_token: String?,
+        timeout_seconds: Float,
+        verify_tls: bool
+      ) -> String
+
+      def self.extract_ltpa_token: (Hash[String, String] headers) -> String?
+
+      private
+
+      def perform_ltpa_login: (
+        NetHTTPTransport transport,
+        String rest_base_url,
+        LTPAAuth credentials,
+        csrf_token: String?,
+        timeout_seconds: Float,
+        verify_tls: bool
+      ) -> String
+
+      def extract_ltpa_token: (Hash[String, String] headers) -> String?
+    end
+  end
+end

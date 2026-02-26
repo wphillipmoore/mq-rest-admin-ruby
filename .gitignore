@@ -32,7 +32,6 @@ htmlcov/
 # Bundler
 /.bundle/
 /vendor/bundle
-Gemfile.lock
 
 # Test output
 /coverage/
@@ -45,6 +44,7 @@ Gemfile.lock
 /_yardoc/
 /doc/
 /rdoc/
+doc/yard/
 
 # RuboCop remote config cache
 .rubocop-https?--*

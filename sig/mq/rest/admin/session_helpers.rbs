@@ -1,0 +1,31 @@
+module MQ
+  module REST
+    module Admin
+      module SessionHelpers
+        private
+
+        def build_basic_auth_header: (String username, String password) -> String
+        def normalize_response_parameters: (Array[String]? response_parameters, ?is_display: bool) -> Array[String]
+        def all_response_parameters?: (Array[String] response_parameters) -> bool
+        def parse_response_payload: (String response_text) -> Hash[String, untyped]
+        def extract_command_response: (Hash[String, untyped] payload) -> Array[Hash[String, untyped]]
+        def extract_optional_int: (untyped value) -> Integer?
+        def error_codes?: (Integer? completion_code, Integer? reason_code) -> bool
+        def flatten_nested_objects: (Array[Hash[String, untyped]] parameter_objects) -> Array[Hash[String, untyped]]
+        def normalize_response_attributes: (Hash[String, untyped] attributes) -> Hash[String, untyped]
+        def build_command_payload: (
+          command: String,
+          qualifier: String,
+          name: String?,
+          request_parameters: untyped,
+          response_parameters: untyped
+        ) -> Hash[String, untyped]
+        def get_command_map: (Hash[String, untyped] mapping_data) -> Hash[String, untyped]
+        def get_response_parameter_macros: (String command, String mqsc_qualifier, mapping_data: Hash[String, untyped]) -> Array[String]
+        def build_unknown_qualifier_issue: (String qualifier) -> Array[MappingIssue]
+        def map_response_parameter_names: (Array[String] response_parameters, Hash[String, String] macro_lookup, Hash[String, String] combined_map, String mapping_qualifier) -> [Array[String], Array[MappingIssue]]
+        def get_qualifier_entry: (String qualifier, mapping_data: Hash[String, untyped]) -> Hash[String, untyped]?
+      end
+    end
+  end
+end

@@ -68,6 +68,8 @@ module MQ
         def handle_unknown_qualifier_list: (String qualifier, Array[Hash[String, untyped]] objects, direction: String, strict: bool) -> Array[Hash[String, untyped]]
         def map_attributes: (qualifier: String, attributes: Hash[String, untyped], key_map: Hash[String, String], key_value_map: Hash[String, untyped], value_map: Hash[String, untyped], direction: String, strict: bool) -> Hash[String, untyped]
         def map_attributes_internal: (qualifier: String, attributes: Hash[String, untyped], key_map: Hash[String, String], key_value_map: Hash[String, untyped], value_map: Hash[String, untyped], direction: String, object_index: Integer?) -> [Hash[String, untyped], Array[MappingIssue]]
+        def map_key_value_attribute: (String attr_name, untyped attr_value, Hash[String, untyped] key_value_map, direction: String, object_index: Integer?, qualifier: String) -> [String, untyped, MappingIssue?]?
+        def map_single_attribute: (String attr_name, untyped attr_value, Hash[String, untyped] mapped, Array[MappingIssue] issues, key_map: Hash[String, String], value_map: Hash[String, untyped], qualifier: String, direction: String, object_index: Integer?) -> void
         def map_value: (qualifier: String, attribute_name: String, attribute_value: untyped, value_map: Hash[String, untyped], direction: String, object_index: Integer?) -> [untyped, Array[MappingIssue]]
         def map_value_list: (qualifier: String, attribute_name: String, attribute_values: Array[untyped], value_mappings: Hash[String, untyped], direction: String, object_index: Integer?) -> [Array[untyped], Array[MappingIssue]]
       end

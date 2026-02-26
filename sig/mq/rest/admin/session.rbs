@@ -10,6 +10,7 @@ module MQ
         include Commands
         include Ensure
         include Sync
+        include SessionHelpers
 
         attr_reader qmgr_name: String
         attr_reader gateway_qmgr: String?
@@ -45,33 +46,14 @@ module MQ
         ) -> Array[Hash[String, untyped]]
 
         def build_mqsc_url: () -> String
+        def execute_transport_request: (Hash[String, untyped] payload) -> Hash[String, untyped]
+        def extract_result_objects: (Hash[String, untyped] response_payload, String mapping_qualifier, bool do_map) -> Array[Hash[String, untyped]]
         def build_headers: () -> Hash[String, String]
-        def build_basic_auth_header: (String username, String password) -> String
-        def build_command_payload: (
-          command: String,
-          qualifier: String,
-          name: String?,
-          request_parameters: untyped,
-          response_parameters: untyped
-        ) -> Hash[String, untyped]
-        def normalize_response_parameters: (Array[String]? response_parameters, ?is_display: bool) -> Array[String]
-        def all_response_parameters?: (Array[String] response_parameters) -> bool
-        def parse_response_payload: (String response_text) -> Hash[String, untyped]
-        def extract_command_response: (Hash[String, untyped] payload) -> Array[Hash[String, untyped]]
         def raise_for_command_errors: (Hash[String, untyped] payload, Integer status_code) -> void
-        def extract_optional_int: (untyped value) -> Integer?
-        def has_error_codes?: (Integer? completion_code, Integer? reason_code) -> bool
-        def flatten_nested_objects: (Array[Hash[String, untyped]] parameter_objects) -> Array[Hash[String, untyped]]
-        def normalize_response_attributes: (Hash[String, untyped] attributes) -> Hash[String, untyped]
         def resolve_mapping_qualifier: (String command, String mqsc_qualifier) -> String
-        def get_command_map: (Hash[String, untyped] mapping_data) -> Hash[String, untyped]
         def map_response_parameters: (String command, String mqsc_qualifier, String mapping_qualifier, Array[String] response_parameters) -> Array[String]
-        def get_response_parameter_macros: (String command, String mqsc_qualifier, mapping_data: Hash[String, untyped]) -> Array[String]
-        def build_unknown_qualifier_issue: (String qualifier) -> Array[MappingIssue]
         def build_snake_to_mqsc_map: (Hash[String, untyped] qualifier_entry) -> Hash[String, String]
         def map_where_keyword: (String where, String mapping_qualifier, strict: bool, mapping_data: Hash[String, untyped]) -> String
-        def map_response_parameter_names: (Array[String] response_parameters, Hash[String, String] macro_lookup, Hash[String, String] combined_map, String mapping_qualifier) -> [Array[String], Array[MappingIssue]]
-        def get_qualifier_entry: (String qualifier, mapping_data: Hash[String, untyped]) -> Hash[String, untyped]?
         def resolve_mapping_data: (Hash[String, untyped]? overrides, Symbol mode) -> Hash[String, untyped]
         def resolve_transport: (credentials credentials, NetHTTPTransport? transport) -> NetHTTPTransport
       end

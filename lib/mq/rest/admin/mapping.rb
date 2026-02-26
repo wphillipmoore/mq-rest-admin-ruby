@@ -219,47 +219,63 @@ module MQ
           issues = []
 
           attributes.each do |attr_name, attr_value|
-            if direction == 'request'
-              kvm_for_key = key_value_map[attr_name]
-              if kvm_for_key && !kvm_for_key.empty?
-                if attr_value.is_a?(String)
-                  mapping = kvm_for_key[attr_value]
-                  if mapping && mapping['key'] && mapping['value']
-                    mapped[mapping['key']] = mapping['value']
-                    next
-                  end
-                end
-                issues << MappingIssue.new(
-                  direction: direction, reason: 'unknown_value',
-                  attribute_name: attr_name, attribute_value: attr_value,
-                  object_index: object_index, qualifier: qualifier
-                )
-                mapped[attr_name] = attr_value
-                next
-              end
-            end
-
-            mapped_key = key_map[attr_name]
-            if mapped_key.nil?
-              issues << MappingIssue.new(
-                direction: direction, reason: 'unknown_key',
-                attribute_name: attr_name, attribute_value: attr_value,
-                object_index: object_index, qualifier: qualifier
-              )
-              mapped[attr_name] = attr_value
+            kvm_result = map_key_value_attribute(
+              attr_name, attr_value, key_value_map,
+              direction: direction, object_index: object_index, qualifier: qualifier
+            )
+            if kvm_result
+              mapped[kvm_result[0]] = kvm_result[1]
+              issues << kvm_result[2] if kvm_result[2]
               next
             end
-
-            mapped_value, value_issues = map_value(
-              qualifier: qualifier, attribute_name: attr_name,
-              attribute_value: attr_value, value_map: value_map,
-              direction: direction, object_index: object_index
+            map_single_attribute(
+              attr_name, attr_value, mapped, issues,
+              key_map: key_map, value_map: value_map,
+              qualifier: qualifier, direction: direction, object_index: object_index
             )
-            mapped[mapped_key] = mapped_value
-            issues.concat(value_issues)
           end
 
           [mapped, issues]
+        end
+
+        def map_key_value_attribute(attr_name, attr_value, key_value_map, direction:, object_index:, qualifier:)
+          return nil unless direction == 'request'
+
+          kvm_for_key = key_value_map[attr_name]
+          return nil unless kvm_for_key && !kvm_for_key.empty?
+
+          if attr_value.is_a?(String)
+            mapping = kvm_for_key[attr_value]
+            return [mapping['key'], mapping['value'], nil] if mapping && mapping['key'] && mapping['value']
+          end
+
+          issue = MappingIssue.new(
+            direction: direction, reason: 'unknown_value',
+            attribute_name: attr_name, attribute_value: attr_value,
+            object_index: object_index, qualifier: qualifier
+          )
+          [attr_name, attr_value, issue]
+        end
+
+        def map_single_attribute(attr_name, attr_value, mapped, issues, key_map:, value_map:, qualifier:,
+                                 direction:, object_index:)
+          mapped_key = key_map[attr_name]
+          if mapped_key.nil?
+            issues << MappingIssue.new(
+              direction: direction, reason: 'unknown_key',
+              attribute_name: attr_name, attribute_value: attr_value,
+              object_index: object_index, qualifier: qualifier
+            )
+            mapped[attr_name] = attr_value
+            return
+          end
+          mapped_value, value_issues = map_value(
+            qualifier: qualifier, attribute_name: attr_name,
+            attribute_value: attr_value, value_map: value_map,
+            direction: direction, object_index: object_index
+          )
+          mapped[mapped_key] = mapped_value
+          issues.concat(value_issues)
         end
 
         def map_value(qualifier:, attribute_name:, attribute_value:, value_map:, direction:, object_index:)
@@ -319,7 +335,9 @@ module MQ
 
         private_class_method :get_qualifier_data, :get_key_map, :get_value_map, :get_key_value_map,
                              :handle_unknown_qualifier, :handle_unknown_qualifier_list,
-                             :map_attributes, :map_attributes_internal, :map_value, :map_value_list
+                             :map_attributes, :map_attributes_internal,
+                             :map_key_value_attribute, :map_single_attribute,
+                             :map_value, :map_value_list
       end
     end
   end

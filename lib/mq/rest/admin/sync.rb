@@ -184,7 +184,7 @@ module MQ
               name: name, request_parameters: nil, response_parameters: ['all']
             )
             polls += 1
-            if has_status?(status_rows, obj_config.status_keys, RUNNING_VALUES)
+            if status?(status_rows, obj_config.status_keys, RUNNING_VALUES)
               elapsed = clock_now - start_time
               return SyncResult.new(operation: :started, polls: polls, elapsed_seconds: elapsed)
             end
@@ -217,7 +217,7 @@ module MQ
               elapsed = clock_now - start_time
               return SyncResult.new(operation: :stopped, polls: polls, elapsed_seconds: elapsed)
             end
-            if has_status?(status_rows, obj_config.status_keys, STOPPED_VALUES)
+            if status?(status_rows, obj_config.status_keys, STOPPED_VALUES)
               elapsed = clock_now - start_time
               return SyncResult.new(operation: :stopped, polls: polls, elapsed_seconds: elapsed)
             end
@@ -241,7 +241,7 @@ module MQ
           )
         end
 
-        def has_status?(rows, status_keys, target_values)
+        def status?(rows, status_keys, target_values)
           rows.any? do |row|
             status_keys.any? do |key|
               value = row[key]

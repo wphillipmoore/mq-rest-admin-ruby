@@ -17,16 +17,6 @@ Layout/LineLength:
 Metrics/AbcSize:
   Max: 30
   CountRepeatedAttributes: false
-  Exclude:
-    - "lib/mq/rest/admin/session.rb"
-
-Metrics/BlockLength:
-  Exclude:
-    - "lib/mq/rest/admin/mapping.rb"
-
-Metrics/BlockNesting:
-  Exclude:
-    - "lib/mq/rest/admin/mapping.rb"
 
 Metrics/ClassLength:
   Max: 250
@@ -34,8 +24,6 @@ Metrics/ClassLength:
     - heredoc
     - array
     - hash
-  Exclude:
-    - "lib/mq/rest/admin/session.rb"
 
 Metrics/CyclomaticComplexity:
   Max: 12
@@ -46,9 +34,6 @@ Metrics/MethodLength:
     - heredoc
     - array
     - hash
-  Exclude:
-    - "lib/mq/rest/admin/session.rb"
-    - "lib/mq/rest/admin/mapping.rb"
 
 Metrics/ModuleLength:
   Max: 200
@@ -68,11 +53,6 @@ Metrics/PerceivedComplexity:
 
 Minitest/MultipleAssertions:
   Enabled: false
-
-Naming/PredicatePrefix:
-  AllowedMethods:
-    - has_error_codes?
-    - has_status?
 
 Style/Documentation:
   Enabled: true

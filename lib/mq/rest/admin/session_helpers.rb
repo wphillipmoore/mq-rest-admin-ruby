@@ -111,7 +111,7 @@ module MQ
           macros = entry['response_parameter_macros']
           return [] unless macros.is_a?(Array)
 
-          macros.select { |m| m.is_a?(String) }
+          macros.grep(String)
         end
 
         def build_unknown_qualifier_issue(qualifier)

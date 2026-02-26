@@ -272,7 +272,7 @@ module MQ
           return response_parameters if all_response_parameters?(response_parameters)
 
           macros = get_response_parameter_macros(command, mqsc_qualifier, mapping_data: @mapping_data)
-          macro_lookup = macros.each_with_object({}) { |m, h| h[m.downcase] = m }
+          macro_lookup = macros.to_h { |m| [m.downcase, m] }
 
           qualifier_entry = get_qualifier_entry(mapping_qualifier, mapping_data: @mapping_data)
           if qualifier_entry.nil?

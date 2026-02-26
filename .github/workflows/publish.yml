@@ -66,25 +66,19 @@ jobs:
           echo "status=$status" >> "$GITHUB_OUTPUT"
 
       - name: Build gem
-        if: steps.gem_check.outputs.status == 'not_found'
+        if: steps.tag_check.outputs.exists == 'false'
         run: |
           mkdir -p dist
           gem build mq-rest-admin.gemspec -o dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem
 
       - name: Attest build provenance
-        if: steps.gem_check.outputs.status == 'not_found'
+        if: steps.tag_check.outputs.exists == 'false'
         uses: actions/attest-build-provenance@v3
         with:
           subject-path: "dist/*"
 
-      - name: Publish to RubyGems
-        if: steps.gem_check.outputs.status == 'not_found'
-        env:
-          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
-        run: gem push dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem
-
       - name: Generate SBOM
-        if: steps.gem_check.outputs.status == 'not_found'
+        if: steps.tag_check.outputs.exists == 'false'
         uses: wphillipmoore/standard-actions/actions/security/trivy@develop
         with:
           scan-type: sbom
@@ -108,6 +102,12 @@ jobs:
             - [RubyGems](https://rubygems.org/gems/mq-rest-admin/versions/${{ steps.version.outputs.version }})
             - [Documentation](https://wphillipmoore.github.io/mq-rest-admin-ruby/)
           release-artifacts: dist/*
+
+      - name: Publish to RubyGems
+        if: steps.gem_check.outputs.status == 'not_found' && secrets.RUBYGEMS_API_KEY != ''
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: gem push dist/mq-rest-admin-${{ steps.version.outputs.version }}.gem
 
       - name: Generate app token for bump PR
         if: steps.tag_check.outputs.exists == 'false'

@@ -125,7 +125,9 @@ jobs:
         with:
           current-version: ${{ steps.version.outputs.version }}
           version-file: lib/mq/rest/admin/version.rb
-          version-regex: "(VERSION\\s*=\\s*').*(')"
-          version-replacement: "\\g<1>{version}\\2"
+          version-regex: '(VERSION\s*=\s*\x27).*(\x27)'
+          version-replacement: '\g<1>{version}\2'
           develop-version-command: ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"
+          post-bump-command: bundle lock --update mq-rest-admin
+          extra-files: Gemfile.lock
           app-token: ${{ steps.app-token.outputs.token }}

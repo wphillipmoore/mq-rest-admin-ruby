@@ -5,7 +5,7 @@ module MQ
     # IBM MQ REST Admin library for Ruby.
     module Admin
       # Semantic version of the mq-rest-admin gem.
-      VERSION = '1.2.2'
+      VERSION = '1.2.3'
     end
   end
 end

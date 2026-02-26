@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.2.1] - 2026-02-26
+## [1.2.2] - 2026-02-26
 
 ### Bug fixes
 
@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - add security-events permission to push workflow (#27)
 - commit Gemfile.lock for CI reproducibility (#38)
 - reorder publish workflow to tag before registry publish (#46)
+- use job-level env for RubyGems secret gate (#49)
 
 ### CI
 

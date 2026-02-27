@@ -165,12 +165,12 @@ git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../
 Container details:
 
 - Queue managers: `QM1` and `QM2`
-- QM1 ports: `1414` (MQ listener), `9443` (mqweb console + REST API)
-- QM2 ports: `1415` (MQ listener), `9444` (mqweb console + REST API)
+- QM1 ports: `1444` (MQ listener), `9473` (mqweb console + REST API)
+- QM2 ports: `1445` (MQ listener), `9474` (mqweb console + REST API)
 - Admin credentials: `mqadmin` / `mqadmin`
 - Read-only credentials: `mqreader` / `mqreader`
-- QM1 REST base URL: `https://localhost:9443/ibmmq/rest/v2`
-- QM2 REST base URL: `https://localhost:9444/ibmmq/rest/v2`
+- QM1 REST base URL: `https://localhost:9473/ibmmq/rest/v2`
+- QM2 REST base URL: `https://localhost:9474/ibmmq/rest/v2`
 - Object prefix: `DEV.*`
 
 ## Architecture

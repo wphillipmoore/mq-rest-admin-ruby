@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-mq_network="mq-dev_mq-dev-net"
+mq_network="mqrest-ruby_mq-dev-net"
 
 if ! docker network inspect "$mq_network" >/dev/null 2>&1; then
   echo "ERROR: Docker network '${mq_network}' not found." >&2
@@ -14,7 +14,7 @@ export DOCKER_TEST_CMD="${DOCKER_TEST_CMD:-bundle install --jobs 4 && bundle exe
 export DOCKER_NETWORK="${mq_network}"
 
 # MQ endpoints use container hostnames (internal port 9443 for both).
-export MQ_REST_ADMIN_RUBY_RUN_INTEGRATION=1
+export MQ_REST_ADMIN_RUN_INTEGRATION=1
 export MQ_QM1_REST_BASE_URL="https://qm1:9443/ibmmq/rest/v2"
 export MQ_QM2_REST_BASE_URL="https://qm2:9443/ibmmq/rest/v2"
 export MQ_ADMIN_USER="mqadmin"

@@ -60,7 +60,7 @@ jobs:
         run: bundle exec rake test
 
   type-check:
-    name: "test: type-check"
+    name: "ci: type-check"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/wphillipmoore/dev-ruby:3.4

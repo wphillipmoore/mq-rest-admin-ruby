@@ -17,6 +17,6 @@ jobs:
     uses: ./.github/workflows/ci.yml
     with:
       ruby-versions: '["3.4"]'
-      integration-matrix: '[{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9463","qm2-rest-port":"9464"}]'
+      integration-matrix: '[{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9479","qm2-rest-port":"9480","qm1-mq-port":"1450","qm2-mq-port":"1451"}]'
       run-security: 'false'
       run-release-gates: 'false'

@@ -9,7 +9,7 @@ on:
         default: '["3.2", "3.3", "3.4"]'
       integration-matrix:
         type: string
-        default: '[{"ruby-version":"3.2","project-suffix":"3-2","qm1-rest-port":"9459","qm2-rest-port":"9460"},{"ruby-version":"3.3","project-suffix":"3-3","qm1-rest-port":"9461","qm2-rest-port":"9462"},{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9463","qm2-rest-port":"9464"}]'
+        default: '[{"ruby-version":"3.2","project-suffix":"3-2","qm1-rest-port":"9475","qm2-rest-port":"9476","qm1-mq-port":"1446","qm2-mq-port":"1447"},{"ruby-version":"3.3","project-suffix":"3-3","qm1-rest-port":"9477","qm2-rest-port":"9478","qm1-mq-port":"1448","qm2-mq-port":"1449"},{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9479","qm2-rest-port":"9480","qm1-mq-port":"1450","qm2-mq-port":"1451"}]'
       run-security:
         type: string
         default: 'true'
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON(inputs.integration-matrix || '[{"ruby-version":"3.2","project-suffix":"3-2","qm1-rest-port":"9459","qm2-rest-port":"9460"},{"ruby-version":"3.3","project-suffix":"3-3","qm1-rest-port":"9461","qm2-rest-port":"9462"},{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9463","qm2-rest-port":"9464"}]') }}
+        include: ${{ fromJSON(inputs.integration-matrix || '[{"ruby-version":"3.2","project-suffix":"3-2","qm1-rest-port":"9475","qm2-rest-port":"9476","qm1-mq-port":"1446","qm2-mq-port":"1447"},{"ruby-version":"3.3","project-suffix":"3-3","qm1-rest-port":"9477","qm2-rest-port":"9478","qm1-mq-port":"1448","qm2-mq-port":"1449"},{"ruby-version":"3.4","project-suffix":"3-4","qm1-rest-port":"9479","qm2-rest-port":"9480","qm1-mq-port":"1450","qm2-mq-port":"1451"}]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -118,16 +118,19 @@ jobs:
       - name: Setup MQ environment
         uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
         with:
-          project-name: mq-rest-admin-ruby-${{ matrix.project-suffix }}
+          project-name: mqrest-ruby-${{ matrix.project-suffix }}
           qm1-rest-port: ${{ matrix.qm1-rest-port }}
           qm2-rest-port: ${{ matrix.qm2-rest-port }}
+          qm1-mq-port: ${{ matrix.qm1-mq-port }}
+          qm2-mq-port: ${{ matrix.qm2-mq-port }}
 
       - name: Run integration tests
         env:
           MQ_REST_BASE_URL: https://localhost:${{ matrix.qm1-rest-port }}/ibmmq/rest/v2
           MQ_REST_BASE_URL_QM2: https://localhost:${{ matrix.qm2-rest-port }}/ibmmq/rest/v2
         run: |
-          MQ_REST_ADMIN_RUBY_RUN_INTEGRATION=1 \
+          MQ_REST_ADMIN_RUN_INTEGRATION=1 \
+          MQ_SKIP_LIFECYCLE=1 \
           bundle exec rake integration
 
   # ---------------------------------------------------------------------------

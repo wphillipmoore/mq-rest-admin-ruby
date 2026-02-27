@@ -86,7 +86,7 @@ module MQ
 
           return if missing_parts.empty?
 
-          detail = missing_parts.map { |e| "  #{e}" }.join("\n")
+          detail = missing_parts.map { |entry| "  #{entry}" }.join("\n")
           raise ArgumentError, "mapping_overrides is incomplete for REPLACE mode. Missing entries:\n#{detail}"
         end
 

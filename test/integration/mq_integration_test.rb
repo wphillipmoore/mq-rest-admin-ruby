@@ -615,8 +615,6 @@ class MqIntegrationTest < Minitest::Test
            "#{lcase.name}: object still visible after delete"
   end
 
-  private
-
   def run_lifecycle_script(script_path)
     system('bash', script_path, exception: true)
   end

@@ -51,8 +51,8 @@ module MQ
           case value
           when nil then nil
           when String, Integer, Float, true, false then value
-          when Array then value.map { |v| serialize_value(v) } # steep:ignore NoMethod
-          when Hash then value.transform_values { |v| serialize_value(v) } # steep:ignore NoMethod
+          when Array then value.map { |element| serialize_value(element) } # steep:ignore NoMethod
+          when Hash then value.transform_values { |hash_value| serialize_value(hash_value) } # steep:ignore NoMethod
           else value.inspect
           end
         end
@@ -174,8 +174,8 @@ module MQ
         end
 
         def get_key_value_map(qualifier_data, map_name)
-          kvm = qualifier_data[map_name]
-          kvm.is_a?(Hash) ? kvm : {}
+          key_value_map = qualifier_data[map_name]
+          key_value_map.is_a?(Hash) ? key_value_map : {}
         end
 
         def handle_unknown_qualifier(qualifier, attributes, direction:, strict:)

@@ -31,7 +31,7 @@ module MQ
         end
 
         def all_response_parameters?(response_parameters)
-          response_parameters.any? { |p| p.downcase == 'all' }
+          response_parameters.any? { |parameter| parameter.downcase == 'all' }
         end
 
         def parse_response_payload(response_text)

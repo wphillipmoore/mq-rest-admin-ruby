@@ -1,8 +1,7 @@
 # Examples
 
-These examples demonstrate common MQ administration tasks using
-`mq-rest-admin`. Each example is self-contained and can be run against
-the local Docker environment.
+Runnable example scripts live in the `examples/` directory. Each script
+demonstrates a common MQ administration task using `mq-rest-admin`.
 
 ## Prerequisites
 
@@ -13,111 +12,84 @@ Start the multi-queue-manager Docker environment and seed both queue managers:
 ./scripts/dev/mq_seed.sh
 ```
 
-This starts two queue managers (`QM1` on port 9443, `QM2` on port 9444) on a
+This starts two queue managers (`QM1` on port 9473, `QM2` on port 9474) on a
 shared Docker network. See [local MQ container](development/local-mq-container.md) for details.
+
+## Environment variables
+
+| Variable                | Default                                          | Description                  |
+|-------------------------|--------------------------------------------------|------------------------------|
+| `MQ_REST_BASE_URL`      | `https://localhost:9473/ibmmq/rest/v2`           | QM1 REST endpoint            |
+| `MQ_REST_BASE_URL_QM2`  | `https://localhost:9474/ibmmq/rest/v2`           | QM2 REST endpoint            |
+| `MQ_QMGR_NAME`         | `QM1`                                            | Queue manager name           |
+| `MQ_ADMIN_USER`         | `mqadmin`                                        | Admin username               |
+| `MQ_ADMIN_PASSWORD`     | `mqadmin`                                        | Admin password               |
+| `DEPTH_THRESHOLD_PCT`   | `80`                                             | Queue depth warning threshold|
 
 ## Health check
 
-Connect to one or more queue managers and check:
+Connects to one or more queue managers and checks QMGR status,
+command server availability, and listener state. Produces a pass/fail
+summary for each queue manager.
 
-- Queue manager attributes via `display_qmgr`
-- Running status via `display_qmstatus`
-- Listener definitions via `display_listener`
-
-```ruby
-require 'mq/rest/admin'
-
-session = MQ::REST::Admin::Session.new(
-  'https://localhost:9443/ibmmq/rest/v2', 'QM1',
-  credentials: MQ::REST::Admin::BasicAuth.new(username: 'mqadmin', password: 'mqadmin'),
-  verify_tls: false
-)
-
-qmgr = session.display_qmgr
-puts "Queue manager: #{qmgr['queue_manager_name']}"
-
-status = session.display_qmstatus
-puts "Status: #{status['channel_initiator_status']}"
-
-listeners = session.display_listener(name: '*')
-listeners.each do |listener|
-  puts "Listener: #{listener['listener_name']} port=#{listener['port']}"
-end
+```bash
+ruby examples/health_check.rb
 ```
+
+See [`examples/health_check.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/health_check.rb) for implementation details.
 
 ## Queue depth monitor
 
-Display all local queues with their current depth and flag queues
-approaching capacity:
+Displays local queues with their current depth, flags queues
+approaching capacity, and sorts by depth percentage.
 
-```ruby
-queues = session.display_queue(name: '*')
-
-queues.each do |queue|
-  depth = queue['current_queue_depth'].to_i
-  max_depth = queue['max_queue_depth'].to_i
-  pct = max_depth.positive? ? depth * 100 / max_depth : 0
-  flag = pct > 80 ? ' *** HIGH ***' : ''
-  printf "%-40s %5d / %5d (%d%%)%s\n",
-         queue['queue_name'], depth, max_depth, pct, flag
-end
+```bash
+ruby examples/queue_depth_monitor.rb
 ```
+
+See [`examples/queue_depth_monitor.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/queue_depth_monitor.rb) for implementation details.
 
 ## Channel status report
 
-Cross-reference channel definitions with live channel status:
+Displays channel definitions alongside live channel status, identifies
+channels that are defined but not running, and shows connection details.
 
-```ruby
-channels = session.display_channel(name: '*')
-statuses = session.display_chstatus(name: '*')
-
-running = statuses.map { |s| s['channel_name'] }.to_set
-
-channels.each do |ch|
-  name = ch['channel_name']
-  state = running.include?(name) ? 'RUNNING' : 'INACTIVE'
-  puts "#{name}: #{state}"
-end
+```bash
+ruby examples/channel_status.rb
 ```
+
+See [`examples/channel_status.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/channel_status.rb) for implementation details.
 
 ## Environment provisioner
 
-Demonstrate bulk provisioning using ensure methods:
+Defines a complete set of queues, channels, and remote queue definitions
+across two queue managers, then verifies connectivity. Includes teardown.
 
-```ruby
-# Ensure application queues exist
-session.ensure_qlocal('APP.REQUESTS',
-  'max_queue_depth' => '50000',
-  'default_persistence' => 'persistent'
-)
-
-session.ensure_qlocal('APP.RESPONSES',
-  'max_queue_depth' => '50000',
-  'default_persistence' => 'persistent'
-)
-
-# Ensure listeners are running
-config = MQ::REST::Admin::SyncConfig.new(timeout_seconds: 60.0)
-session.start_listener_sync('TCP.LISTENER', config: config)
-
-puts 'Environment provisioned'
+```bash
+ruby examples/provision_environment.rb
 ```
+
+See [`examples/provision_environment.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/provision_environment.rb) for implementation details.
 
 ## Dead letter queue inspector
 
-Inspect the dead letter queue configuration:
+Checks the dead letter queue configuration, reports depth and capacity,
+and suggests actions when messages are present.
 
-```ruby
-qmgr = session.display_qmgr
-
-dlq_name = qmgr['dead_letter_q_name']
-if dlq_name && !dlq_name.strip.empty?
-  dlq = session.display_queue(name: dlq_name)
-  unless dlq.empty?
-    printf "DLQ: %s depth=%s max=%s\n",
-           dlq_name, dlq[0]['current_queue_depth'], dlq[0]['max_queue_depth']
-  end
-else
-  puts 'No dead letter queue configured'
-end
+```bash
+ruby examples/dlq_inspector.rb
 ```
+
+See [`examples/dlq_inspector.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/dlq_inspector.rb) for implementation details.
+
+## Queue status and connection handles
+
+Demonstrates `DISPLAY QSTATUS TYPE(HANDLE)` and `DISPLAY CONN TYPE(HANDLE)`
+queries, showing how `mq-rest-admin` flattens nested object response
+structures into uniform flat hashes.
+
+```bash
+ruby examples/queue_status.rb
+```
+
+See [`examples/queue_status.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/queue_status.rb) for implementation details.

@@ -176,6 +176,20 @@ module MQ
 
         # -- Mutation with optional name --
 
+        def test_alter_authinfo
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_authinfo(name: 'MY.AUTH')
+
+          assert_nil result
+          assert_equal 'ALTER', transport.calls[0][:payload]['command']
+          assert_equal 'AUTHINFO', transport.calls[0][:payload]['qualifier']
+          assert_equal 'MY.AUTH', transport.calls[0][:payload]['name']
+        end
+
         def test_alter_qmgr
           session, transport = Admin.build_test_session(
             responses: [
@@ -187,6 +201,71 @@ module MQ
           assert_nil result
           assert_equal 'ALTER', transport.calls[0][:payload]['command']
           assert_equal 'QMGR', transport.calls[0][:payload]['qualifier']
+        end
+
+        def test_alter_qlocal
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_qlocal(name: 'MY.Q')
+
+          assert_nil result
+          assert_equal 'ALTER', transport.calls[0][:payload]['command']
+          assert_equal 'QLOCAL', transport.calls[0][:payload]['qualifier']
+          assert_equal 'MY.Q', transport.calls[0][:payload]['name']
+        end
+
+        def test_alter_qlocal_without_name
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_qlocal
+
+          assert_nil result
+          assert_nil transport.calls[0][:payload]['name']
+        end
+
+        def test_alter_qremote
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_qremote(name: 'MY.Q')
+
+          assert_nil result
+          assert_equal 'ALTER', transport.calls[0][:payload]['command']
+          assert_equal 'QREMOTE', transport.calls[0][:payload]['qualifier']
+        end
+
+        def test_alter_qalias
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_qalias(name: 'MY.Q')
+
+          assert_nil result
+          assert_equal 'ALTER', transport.calls[0][:payload]['command']
+          assert_equal 'QALIAS', transport.calls[0][:payload]['qualifier']
+        end
+
+        def test_alter_qmodel
+          session, transport = Admin.build_test_session(
+            responses: [
+              TransportResponse.new(status_code: 200, body: Admin.build_response, headers: {})
+            ]
+          )
+          result = session.alter_qmodel(name: 'MY.Q')
+
+          assert_nil result
+          assert_equal 'ALTER', transport.calls[0][:payload]['command']
+          assert_equal 'QMODEL', transport.calls[0][:payload]['qualifier']
         end
 
         # -- Mutation with no name --
@@ -207,7 +286,7 @@ module MQ
         # -- Verify all 148 commands are defined --
 
         def test_all_commands_defined
-          expected_count = 148
+          expected_count = 152
           actual_count = Commands.instance_methods(false).length
 
           assert_equal expected_count, actual_count,

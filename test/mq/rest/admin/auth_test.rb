@@ -121,13 +121,13 @@ module MQ
         def test_extract_ltpa_token_lowercase_header
           headers = { 'set-cookie' => 'LtpaToken2=abc; Path=/' }
 
-          assert_equal ['LtpaToken2', 'abc'], Admin.extract_ltpa_token(headers)
+          assert_equal %w[LtpaToken2 abc], Admin.extract_ltpa_token(headers)
         end
 
         def test_extract_ltpa_token_with_suffixed_cookie_name
           headers = { 'Set-Cookie' => 'LtpaToken2_xyz123=suffixed_tok; Path=/; Secure' }
 
-          assert_equal ['LtpaToken2_xyz123', 'suffixed_tok'], Admin.extract_ltpa_token(headers)
+          assert_equal %w[LtpaToken2_xyz123 suffixed_tok], Admin.extract_ltpa_token(headers)
         end
 
         def test_extract_ltpa_token_missing
@@ -149,7 +149,7 @@ module MQ
           # Actually, "".split(";").first returns "" not nil. Let's test with a trailing comma
           headers = { 'Set-Cookie' => 'LtpaToken2=tok;Path=/,;;' }
 
-          assert_equal ['LtpaToken2', 'tok'], Admin.extract_ltpa_token(headers)
+          assert_equal %w[LtpaToken2 tok], Admin.extract_ltpa_token(headers)
         end
       end
     end

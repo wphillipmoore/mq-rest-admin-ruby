@@ -66,6 +66,8 @@ nav:
       - Examples: examples.md
   - Releases:
       - Changelog: changelog.md
+      - Release Notes:
+          - releases/index.md
   - API Reference:
       - api/index.md
       - Session: api/session.md

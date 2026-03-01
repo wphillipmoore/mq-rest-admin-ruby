@@ -948,13 +948,13 @@ module MQ
 
         # Execute the MQSC +DELETE QALIAS+ command.
         #
-        # @param name [String, nil] object name
+        # @param name [String] the object name
         # @param request_parameters [Hash{String => Object}, nil] request attributes
         # @param response_parameters [Array<String>, nil] response attributes to return
         # @return [nil]
         # @raise [CommandError] if the MQSC command fails
         # @raise [MappingError] if attribute mapping fails in strict mode
-        def delete_qalias(name: nil, request_parameters: nil, response_parameters: nil)
+        def delete_qalias(name, request_parameters: nil, response_parameters: nil)
           mqsc_command(
             command: 'DELETE', mqsc_qualifier: 'QALIAS',
             name: name, request_parameters: request_parameters,
@@ -965,13 +965,13 @@ module MQ
 
         # Execute the MQSC +DELETE QLOCAL+ command.
         #
-        # @param name [String, nil] object name
+        # @param name [String] the object name
         # @param request_parameters [Hash{String => Object}, nil] request attributes
         # @param response_parameters [Array<String>, nil] response attributes to return
         # @return [nil]
         # @raise [CommandError] if the MQSC command fails
         # @raise [MappingError] if attribute mapping fails in strict mode
-        def delete_qlocal(name: nil, request_parameters: nil, response_parameters: nil)
+        def delete_qlocal(name, request_parameters: nil, response_parameters: nil)
           mqsc_command(
             command: 'DELETE', mqsc_qualifier: 'QLOCAL',
             name: name, request_parameters: request_parameters,
@@ -982,13 +982,13 @@ module MQ
 
         # Execute the MQSC +DELETE QMODEL+ command.
         #
-        # @param name [String, nil] object name
+        # @param name [String] the object name
         # @param request_parameters [Hash{String => Object}, nil] request attributes
         # @param response_parameters [Array<String>, nil] response attributes to return
         # @return [nil]
         # @raise [CommandError] if the MQSC command fails
         # @raise [MappingError] if attribute mapping fails in strict mode
-        def delete_qmodel(name: nil, request_parameters: nil, response_parameters: nil)
+        def delete_qmodel(name, request_parameters: nil, response_parameters: nil)
           mqsc_command(
             command: 'DELETE', mqsc_qualifier: 'QMODEL',
             name: name, request_parameters: request_parameters,
@@ -999,13 +999,13 @@ module MQ
 
         # Execute the MQSC +DELETE QREMOTE+ command.
         #
-        # @param name [String, nil] object name
+        # @param name [String] the object name
         # @param request_parameters [Hash{String => Object}, nil] request attributes
         # @param response_parameters [Array<String>, nil] response attributes to return
         # @return [nil]
         # @raise [CommandError] if the MQSC command fails
         # @raise [MappingError] if attribute mapping fails in strict mode
-        def delete_qremote(name: nil, request_parameters: nil, response_parameters: nil)
+        def delete_qremote(name, request_parameters: nil, response_parameters: nil)
           mqsc_command(
             command: 'DELETE', mqsc_qualifier: 'QREMOTE',
             name: name, request_parameters: request_parameters,

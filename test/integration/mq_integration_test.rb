@@ -127,6 +127,7 @@ end
 # Methods that take name as a positional (non-keyword) argument.
 POSITIONAL_NAME_METHODS = %i[
   define_qlocal define_qremote define_qalias define_qmodel define_channel
+  delete_qlocal delete_qremote delete_qalias delete_qmodel
   delete_queue delete_channel
   display_listener display_namelist display_process display_topic display_qstatus
   ensure_qlocal ensure_qremote ensure_qalias ensure_qmodel ensure_channel
@@ -329,7 +330,7 @@ class MqIntegrationTest < Minitest::Test
 
     # Clean up from any prior failed run.
     begin
-      session.delete_qlocal(name: TEST_ENSURE_QLOCAL)
+      session.delete_qlocal(TEST_ENSURE_QLOCAL)
     rescue MQ::REST::Admin::Error # rubocop:disable Lint/SuppressedException
     end
 
@@ -349,7 +350,7 @@ class MqIntegrationTest < Minitest::Test
     assert_equal :updated, result.action
 
     # Cleanup.
-    session.delete_qlocal(name: TEST_ENSURE_QLOCAL)
+    session.delete_qlocal(TEST_ENSURE_QLOCAL)
   end
 
   def test_ensure_channel_lifecycle

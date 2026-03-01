@@ -13,6 +13,16 @@ module MQ
         # @param timeout_seconds [Float] maximum wait time (default: 30.0)
         # @param poll_interval_seconds [Float] polling interval (default: 1.0)
         def initialize(timeout_seconds: 30.0, poll_interval_seconds: 1.0)
+          unless timeout_seconds.positive?
+            raise ArgumentError,
+                  "timeout_seconds must be positive, got #{timeout_seconds}"
+          end
+
+          unless poll_interval_seconds.positive?
+            raise ArgumentError,
+                  "poll_interval_seconds must be positive, got #{poll_interval_seconds}"
+          end
+
           super
         end
       end

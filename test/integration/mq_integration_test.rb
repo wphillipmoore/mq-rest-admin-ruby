@@ -466,7 +466,7 @@ class MqIntegrationTest < Minitest::Test
   end
 
   # -------------------------------------------------------------------------
-  # LTPA auth test (expected to fail on dev containers)
+  # LTPA auth test
   # -------------------------------------------------------------------------
 
   def test_ltpa_auth_display_qmgr
@@ -481,8 +481,6 @@ class MqIntegrationTest < Minitest::Test
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value?(result, @config.qmgr_name)
-  rescue MQ::REST::Admin::Error => e
-    skip "LTPA auth not supported on dev containers: #{e.message}"
   end
 
   private

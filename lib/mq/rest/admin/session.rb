@@ -109,9 +109,10 @@ module MQ
           @mapping_data = resolve_mapping_data(mapping_overrides, mapping_overrides_mode)
           @transport = resolve_transport(credentials, transport)
 
+          @ltpa_cookie_name = nil
           @ltpa_token = nil
           if credentials.is_a?(LTPAAuth)
-            @ltpa_token = Admin.perform_ltpa_login(
+            @ltpa_cookie_name, @ltpa_token = Admin.perform_ltpa_login(
               @transport, @rest_base_url, credentials,
               csrf_token: @csrf_token,
               timeout_seconds: @timeout_seconds,
@@ -214,7 +215,7 @@ module MQ
               @credentials.username, @credentials.password
             )
           elsif @credentials.is_a?(LTPAAuth) && @ltpa_token
-            headers['Cookie'] = "#{LTPA_COOKIE_NAME}=#{@ltpa_token}"
+            headers['Cookie'] = "#{@ltpa_cookie_name}=#{@ltpa_token}"
           end
           headers['ibm-mq-rest-csrf-token'] = @csrf_token unless @csrf_token.nil?
           headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil? # steep:ignore

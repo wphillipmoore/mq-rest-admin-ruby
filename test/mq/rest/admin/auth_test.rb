@@ -46,15 +46,32 @@ module MQ
             headers: { 'Set-Cookie' => 'LtpaToken2=abc123; Path=/; Secure' }
           )
           transport = MockTransport.new(responses: [response])
-          token = Admin.perform_ltpa_login(
+          cookie_name, token = Admin.perform_ltpa_login(
             transport, 'https://localhost:9443/ibmmq/rest/v2',
             LTPAAuth.new(username: 'user', password: 'pass'),
             csrf_token: 'local', timeout_seconds: 30.0, verify_tls: false
           )
 
+          assert_equal 'LtpaToken2', cookie_name
           assert_equal 'abc123', token
           assert_equal 1, transport.calls.length
           assert_includes transport.calls[0][:url], '/login'
+        end
+
+        def test_perform_ltpa_login_success_with_suffixed_cookie
+          response = TransportResponse.new(
+            status_code: 200, body: '{}',
+            headers: { 'Set-Cookie' => 'LtpaToken2_abcdef=suffixed_tok; Path=/; Secure' }
+          )
+          transport = MockTransport.new(responses: [response])
+          cookie_name, token = Admin.perform_ltpa_login(
+            transport, 'https://localhost:9443/ibmmq/rest/v2',
+            LTPAAuth.new(username: 'user', password: 'pass'),
+            csrf_token: 'local', timeout_seconds: 30.0, verify_tls: false
+          )
+
+          assert_equal 'LtpaToken2_abcdef', cookie_name
+          assert_equal 'suffixed_tok', token
         end
 
         def test_perform_ltpa_login_failure_status
@@ -90,12 +107,13 @@ module MQ
             headers: { 'Set-Cookie' => 'LtpaToken2=token123; Path=/' }
           )
           transport = MockTransport.new(responses: [response])
-          token = Admin.perform_ltpa_login(
+          cookie_name, token = Admin.perform_ltpa_login(
             transport, 'https://localhost:9443',
             LTPAAuth.new(username: 'u', password: 'p'),
             csrf_token: nil, timeout_seconds: nil, verify_tls: true
           )
 
+          assert_equal 'LtpaToken2', cookie_name
           assert_equal 'token123', token
           refute transport.calls[0][:headers].key?('ibm-mq-rest-csrf-token')
         end
@@ -103,7 +121,13 @@ module MQ
         def test_extract_ltpa_token_lowercase_header
           headers = { 'set-cookie' => 'LtpaToken2=abc; Path=/' }
 
-          assert_equal 'abc', Admin.extract_ltpa_token(headers)
+          assert_equal ['LtpaToken2', 'abc'], Admin.extract_ltpa_token(headers)
+        end
+
+        def test_extract_ltpa_token_with_suffixed_cookie_name
+          headers = { 'Set-Cookie' => 'LtpaToken2_xyz123=suffixed_tok; Path=/; Secure' }
+
+          assert_equal ['LtpaToken2_xyz123', 'suffixed_tok'], Admin.extract_ltpa_token(headers)
         end
 
         def test_extract_ltpa_token_missing
@@ -125,7 +149,7 @@ module MQ
           # Actually, "".split(";").first returns "" not nil. Let's test with a trailing comma
           headers = { 'Set-Cookie' => 'LtpaToken2=tok;Path=/,;;' }
 
-          assert_equal 'tok', Admin.extract_ltpa_token(headers)
+          assert_equal ['LtpaToken2', 'tok'], Admin.extract_ltpa_token(headers)
         end
       end
     end

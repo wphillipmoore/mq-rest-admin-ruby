@@ -44,7 +44,7 @@ module MQ
 
       module_function
 
-      # Perform an LTPA login and return the session token.
+      # Perform an LTPA login and return the cookie name and token value.
       #
       # @param transport [NetHTTPTransport] the HTTP transport to use
       # @param rest_base_url [String] the MQ REST API base URL
@@ -52,7 +52,7 @@ module MQ
       # @param csrf_token [String, nil] the CSRF token to include
       # @param timeout_seconds [Float] request timeout in seconds
       # @param verify_tls [Boolean] whether to verify TLS certificates
-      # @return [String] the LTPA session token
+      # @return [Array(String, String)] a [cookie_name, token_value] pair
       # @raise [AuthError] if login fails or no token is returned
       def perform_ltpa_login(transport, rest_base_url, credentials, csrf_token:, timeout_seconds:, verify_tls:)
         login_url = "#{rest_base_url}#{LTPA_LOGIN_PATH}"
@@ -72,26 +72,30 @@ module MQ
           )
         end
 
-        token = extract_ltpa_token(response.headers)
-        if token.nil?
+        result = extract_ltpa_token(response.headers)
+        if result.nil?
           raise AuthError.new(
             'LTPA login succeeded but no LtpaToken2 cookie was returned.',
             url: login_url, status_code: response.status_code
           )
         end
 
-        token
+        result
       end
 
-      # Extract the LtpaToken2 value from HTTP response headers.
+      # Extract an LtpaToken2 cookie from HTTP response headers.
+      #
+      # Matches any cookie whose name equals "LtpaToken2" or starts with
+      # "LtpaToken2" (e.g. "LtpaToken2_abcdef"), using prefix matching
+      # to support Liberty's suffixed cookie names.
       #
       # @param headers [Hash{String => String}] the HTTP response headers
-      # @return [String, nil] the LTPA token value, or nil if not found
+      # @return [Array(String, String), nil] a [cookie_name, token_value] pair, or nil if not found
       def extract_ltpa_token(headers)
         set_cookie = headers['Set-Cookie'] || headers['set-cookie']
         return nil if set_cookie.nil? || set_cookie.empty?
 
-        # Parse Set-Cookie header for LtpaToken2
+        # Parse Set-Cookie header for LtpaToken2 (exact or prefixed)
         set_cookie.split(',').each do |cookie_str|
           parts = cookie_str.strip.split(';').first
           # :nocov:
@@ -99,7 +103,7 @@ module MQ
           # :nocov:
 
           name, _, value = parts.partition('=')
-          return value if name.strip == LTPA_COOKIE_NAME
+          return [name.strip, value] if name.strip.start_with?(LTPA_COOKIE_NAME)
         end
         nil
       end

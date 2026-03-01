@@ -45,6 +45,28 @@ module MQ
           assert_includes transport.calls[1][:headers]['Cookie'], 'LtpaToken2=mytoken'
         end
 
+        def test_ltpa_auth_session_with_suffixed_cookie_name
+          ltpa_login = TransportResponse.new(
+            status_code: 200, body: '{}',
+            headers: { 'Set-Cookie' => 'LtpaToken2_abc123=suffixed_tok; Path=/' }
+          )
+          cmd_response = TransportResponse.new(
+            status_code: 200,
+            body: Admin.build_response([{ 'DESCR' => 'ok' }]),
+            headers: {}
+          )
+          transport = MockTransport.new(responses: [ltpa_login, cmd_response])
+          session = Session.new(
+            'https://localhost:9443/ibmmq/rest/v2', 'QM1',
+            credentials: LTPAAuth.new(username: 'user', password: 'pass'),
+            transport: transport, map_attributes: false, verify_tls: false
+          )
+          result = session.display_qmgr
+
+          assert_equal({ 'DESCR' => 'ok' }, result)
+          assert_equal 'LtpaToken2_abc123=suffixed_tok', transport.calls[1][:headers]['Cookie']
+        end
+
         def test_certificate_auth_creates_transport
           session = Session.new(
             'https://localhost:9443/ibmmq/rest/v2', 'QM1',

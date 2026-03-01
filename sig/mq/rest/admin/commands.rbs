@@ -96,6 +96,10 @@ module MQ
         def alter_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_namelist: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qalias: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qmodel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qremote: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_security: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil

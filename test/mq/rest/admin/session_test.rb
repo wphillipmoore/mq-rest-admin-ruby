@@ -951,6 +951,22 @@ module MQ
 
           assert_nil result
         end
+
+        def test_resolve_mapping_qualifier_default_fallback
+          # session.rb:268 - then branch: mqsc_qualifier found in DEFAULT_MAPPING_QUALIFIERS
+          # but not in the command map. Verifies the fallback path.
+          transport = MockTransport.new
+          session = Session.new(
+            'https://localhost:9443/ibmmq/rest/v2', 'QM1',
+            credentials: BasicAuth.new(username: 'a', password: 'b'),
+            transport: transport, map_attributes: false, verify_tls: false
+          )
+          # Use a qualifier that's in DEFAULT_MAPPING_QUALIFIERS but craft
+          # a command that won't appear in the command map.
+          result = session.send(:resolve_mapping_qualifier, 'NONEXISTENT', 'QUEUE')
+
+          assert_equal 'queue', result
+        end
       end
     end
   end

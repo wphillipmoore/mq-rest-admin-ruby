@@ -92,7 +92,7 @@ jobs:
       - name: Run license compliance check
         run: |
           gem install license_finder --no-document
-          license_finder --decisions-file=doc/dependency_decisions.yml || true
+          license_finder --decisions-file=doc/dependency_decisions.yml
 
   # ---------------------------------------------------------------------------
   # Integration tests

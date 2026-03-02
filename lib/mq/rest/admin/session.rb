@@ -109,9 +109,10 @@ module MQ
           @mapping_data = resolve_mapping_data(mapping_overrides, mapping_overrides_mode)
           @transport = resolve_transport(credentials, transport)
 
+          @ltpa_cookie_name = nil
           @ltpa_token = nil
           if credentials.is_a?(LTPAAuth)
-            @ltpa_token = Admin.perform_ltpa_login(
+            @ltpa_cookie_name, @ltpa_token = Admin.perform_ltpa_login(
               @transport, @rest_base_url, credentials,
               csrf_token: @csrf_token,
               timeout_seconds: @timeout_seconds,
@@ -214,7 +215,7 @@ module MQ
               @credentials.username, @credentials.password
             )
           elsif @credentials.is_a?(LTPAAuth) && @ltpa_token
-            headers['Cookie'] = "#{LTPA_COOKIE_NAME}=#{@ltpa_token}"
+            headers['Cookie'] = "#{@ltpa_cookie_name}=#{@ltpa_token}"
           end
           headers['ibm-mq-rest-csrf-token'] = @csrf_token unless @csrf_token.nil?
           headers[GATEWAY_HEADER] = @gateway_qmgr unless @gateway_qmgr.nil? # steep:ignore
@@ -222,28 +223,30 @@ module MQ
         end
 
         def raise_for_command_errors(payload, status_code)
-          overall_cc = extract_optional_int(payload['overallCompletionCode'])
-          overall_rc = extract_optional_int(payload['overallReasonCode'])
-          has_overall = error_codes?(overall_cc, overall_rc)
+          overall_completion_code = extract_optional_int(payload['overallCompletionCode'])
+          overall_reason_code = extract_optional_int(payload['overallReasonCode'])
+          has_overall = error_codes?(overall_completion_code, overall_reason_code)
 
           command_issues = []
           command_response = payload['commandResponse']
           if command_response.is_a?(Array)
-            command_response.each_with_index do |item, idx|
+            command_response.each_with_index do |item, item_index|
               next unless item.is_a?(Hash)
 
-              cc = extract_optional_int(item['completionCode'])
-              rc = extract_optional_int(item['reasonCode'])
-              next unless error_codes?(cc, rc)
+              completion_code = extract_optional_int(item['completionCode'])
+              reason_code = extract_optional_int(item['reasonCode'])
+              next unless error_codes?(completion_code, reason_code)
 
-              command_issues << "index=#{idx} completionCode=#{cc} reasonCode=#{rc}"
+              command_issues << "index=#{item_index} completionCode=#{completion_code} reasonCode=#{reason_code}"
             end
           end
 
           return unless has_overall || !command_issues.empty?
 
           lines = ['MQ REST command failed.']
-          lines << "overallCompletionCode=#{overall_cc} overallReasonCode=#{overall_rc}" if has_overall
+          if has_overall
+            lines << "overallCompletionCode=#{overall_completion_code} overallReasonCode=#{overall_reason_code}"
+          end
           unless command_issues.empty?
             lines << 'commandResponse:'
             lines.concat(command_issues)
@@ -272,7 +275,7 @@ module MQ
           return response_parameters if all_response_parameters?(response_parameters)
 
           macros = get_response_parameter_macros(command, mqsc_qualifier, mapping_data: @mapping_data)
-          macro_lookup = macros.to_h { |m| [m.downcase, m] }
+          macro_lookup = macros.to_h { |macro| [macro.downcase, macro] }
 
           qualifier_entry = get_qualifier_entry(mapping_qualifier, mapping_data: @mapping_data)
           if qualifier_entry.nil?

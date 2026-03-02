@@ -96,6 +96,10 @@ module MQ
         def alter_listener: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_namelist: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qalias: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qmodel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def alter_qremote: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_security: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def alter_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
@@ -136,10 +140,10 @@ module MQ
         def delete_policy: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def delete_process: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def delete_psid: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
-        def delete_qalias: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
-        def delete_qlocal: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
-        def delete_qmodel: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
-        def delete_qremote: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qalias: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qlocal: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qmodel: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
+        def delete_qremote: (String name, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def delete_service: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def delete_stgclass: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil
         def delete_sub: (?name: String?, ?request_parameters: request_params, ?response_parameters: response_params) -> nil

@@ -39,6 +39,30 @@ module MQ
           assert_in_delta 60.0, cfg.timeout_seconds
           assert_in_delta 2.0, cfg.poll_interval_seconds
         end
+
+        def test_zero_timeout_raises
+          err = assert_raises(ArgumentError) { SyncConfig.new(timeout_seconds: 0.0) }
+
+          assert_match(/timeout_seconds must be positive/, err.message)
+        end
+
+        def test_negative_timeout_raises
+          err = assert_raises(ArgumentError) { SyncConfig.new(timeout_seconds: -1.0) }
+
+          assert_match(/timeout_seconds must be positive/, err.message)
+        end
+
+        def test_zero_poll_interval_raises
+          err = assert_raises(ArgumentError) { SyncConfig.new(poll_interval_seconds: 0.0) }
+
+          assert_match(/poll_interval_seconds must be positive/, err.message)
+        end
+
+        def test_negative_poll_interval_raises
+          err = assert_raises(ArgumentError) { SyncConfig.new(poll_interval_seconds: -1.0) }
+
+          assert_match(/poll_interval_seconds must be positive/, err.message)
+        end
       end
 
       class SyncResultTest < Minitest::Test

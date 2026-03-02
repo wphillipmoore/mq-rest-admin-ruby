@@ -1,9 +1,6 @@
 # Ensure
 
-## Overview
-
-The `Ensure` module provides idempotent create-or-update operations for MQ
-objects. Each method checks the current state and only makes changes if needed.
+--8<-- "concepts/ensure-pattern.md"
 
 ## EnsureResult
 
@@ -14,7 +11,7 @@ objects. Each method checks the current state and only makes changes if needed.
 | `action` | `Symbol` | `:created`, `:updated`, or `:unchanged` |
 | `changed` | `Array<String>` | List of attributes that were changed |
 
-## Usage
+## Basic usage
 
 ```ruby
 result = session.ensure_qlocal('MY.QUEUE',
@@ -22,33 +19,27 @@ result = session.ensure_qlocal('MY.QUEUE',
   'default_persistence' => 'persistent'
 )
 
-puts result.action   # :created, :updated, or :unchanged
-puts result.changed  # ["max_queue_depth"] if updated
+case result.action
+when :created
+  puts "Queue created with requested attributes"
+when :updated
+  puts "Queue updated: #{result.changed.join(', ')}"
+when :unchanged
+  puts "Queue already matches desired state"
+end
 ```
 
-## Available ensure methods
+## Configuration management example
 
-| Method | Object type |
-| --- | --- |
-| `ensure_qmgr` | Queue manager (singleton, no name) |
-| `ensure_qlocal` | Local queue |
-| `ensure_qremote` | Remote queue |
-| `ensure_qalias` | Alias queue |
-| `ensure_qmodel` | Model queue |
-| `ensure_channel` | Channel |
-| `ensure_authinfo` | Authentication information |
-| `ensure_listener` | Listener |
-| `ensure_namelist` | Namelist |
-| `ensure_process` | Process |
-| `ensure_service` | Service |
-| `ensure_topic` | Topic |
-| `ensure_sub` | Subscription |
-| `ensure_stgclass` | Storage class |
-| `ensure_comminfo` | Communication information |
-| `ensure_cfstruct` | CF structure |
+```ruby
+desired_queues = {
+  'APP.REQUESTS'  => { 'max_queue_depth' => '50000', 'default_persistence' => 'persistent' },
+  'APP.RESPONSES' => { 'max_queue_depth' => '50000', 'default_persistence' => 'persistent' },
+  'APP.ERRORS'    => { 'max_queue_depth' => '10000' }
+}
 
-## Comparison logic
-
-Values are compared case-insensitively for strings (after stripping
-whitespace). Non-string values use standard equality. This handles MQ's
-inconsistent casing in DISPLAY responses.
+desired_queues.each do |name, attrs|
+  result = session.ensure_qlocal(name, attrs)
+  puts "#{name}: #{result.action} #{result.changed}"
+end
+```

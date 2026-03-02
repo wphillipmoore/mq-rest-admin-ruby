@@ -4,11 +4,19 @@
 
 - [Session](session.md) -- `Session` class and constructor
 - [Commands](commands.md) -- MQSC command methods
-- [Transport](transport.md) -- `TransportResponse` and `NetHTTPTransport`
+
+## Declarative Management
+
+- [Ensure](ensure.md) -- Idempotent create-or-update for MQ objects
+- [Sync](sync.md) -- Synchronous start/stop/restart with polling
 
 ## Authentication
 
 - [Auth](auth.md) -- `BasicAuth`, `LTPAAuth`, `CertificateAuth`
+
+## Transport
+
+- [Transport](transport.md) -- `TransportResponse` and `NetHTTPTransport`
 
 ## Mapping
 
@@ -17,8 +25,3 @@
 ## Errors
 
 - [Errors](errors.md) -- Error class hierarchy for `rescue` matching
-
-## Patterns
-
-- [Ensure](ensure.md) -- `EnsureResult`, ensure action symbols
-- [Sync](sync.md) -- `SyncConfig`, `SyncResult`

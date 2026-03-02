@@ -10,7 +10,11 @@ if [ ! -d "$mq_dev_env" ]; then
   exit 1
 fi
 
-export COMPOSE_PROJECT_NAME="mq-dev"
+export COMPOSE_PROJECT_NAME=mqrest-ruby
+export QM1_REST_PORT=9473
+export QM2_REST_PORT=9474
+export QM1_MQ_PORT=1444
+export QM2_MQ_PORT=1445
 
 cd "$mq_dev_env"
 exec scripts/mq_reset.sh

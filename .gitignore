@@ -43,6 +43,7 @@ htmlcov/
 /.yardoc/
 /_yardoc/
 /doc/
+!/doc/dependency_decisions.yml
 /rdoc/
 doc/yard/
 

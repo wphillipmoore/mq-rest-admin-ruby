@@ -13,6 +13,16 @@ module MQ
         # @param timeout_seconds [Float] maximum wait time (default: 30.0)
         # @param poll_interval_seconds [Float] polling interval (default: 1.0)
         def initialize(timeout_seconds: 30.0, poll_interval_seconds: 1.0)
+          unless timeout_seconds.positive?
+            raise ArgumentError,
+                  "timeout_seconds must be positive, got #{timeout_seconds}"
+          end
+
+          unless poll_interval_seconds.positive?
+            raise ArgumentError,
+                  "poll_interval_seconds must be positive, got #{poll_interval_seconds}"
+          end
+
           super
         end
       end
@@ -170,7 +180,7 @@ module MQ
         private
 
         def start_and_poll(name, obj_config, config)
-          cfg = config || SyncConfig.new
+          sync_config = config || SyncConfig.new
           mqsc_command(
             command: 'START', mqsc_qualifier: obj_config.start_qualifier,
             name: name, request_parameters: nil, response_parameters: nil
@@ -178,7 +188,7 @@ module MQ
           polls = 0
           start_time = clock_now
           loop do
-            sleep_interval(cfg.poll_interval_seconds)
+            sleep_interval(sync_config.poll_interval_seconds)
             status_rows = mqsc_command(
               command: 'DISPLAY', mqsc_qualifier: obj_config.status_qualifier,
               name: name, request_parameters: nil, response_parameters: ['all']
@@ -189,17 +199,17 @@ module MQ
               return SyncResult.new(operation: :started, polls: polls, elapsed_seconds: elapsed)
             end
             elapsed = clock_now - start_time
-            next unless elapsed >= cfg.timeout_seconds
+            next unless elapsed >= sync_config.timeout_seconds
 
             raise TimeoutError.new(
-              "#{obj_config.start_qualifier} '#{name}' did not reach RUNNING within #{cfg.timeout_seconds}s",
+              "#{obj_config.start_qualifier} '#{name}' did not reach RUNNING within #{sync_config.timeout_seconds}s",
               name: name, operation: 'start', elapsed: elapsed
             )
           end
         end
 
         def stop_and_poll(name, obj_config, config)
-          cfg = config || SyncConfig.new
+          sync_config = config || SyncConfig.new
           mqsc_command(
             command: 'STOP', mqsc_qualifier: obj_config.stop_qualifier,
             name: name, request_parameters: nil, response_parameters: nil
@@ -207,7 +217,7 @@ module MQ
           polls = 0
           start_time = clock_now
           loop do
-            sleep_interval(cfg.poll_interval_seconds)
+            sleep_interval(sync_config.poll_interval_seconds)
             status_rows = mqsc_command(
               command: 'DISPLAY', mqsc_qualifier: obj_config.status_qualifier,
               name: name, request_parameters: nil, response_parameters: ['all']
@@ -222,10 +232,10 @@ module MQ
               return SyncResult.new(operation: :stopped, polls: polls, elapsed_seconds: elapsed)
             end
             elapsed = clock_now - start_time
-            next unless elapsed >= cfg.timeout_seconds
+            next unless elapsed >= sync_config.timeout_seconds
 
             raise TimeoutError.new(
-              "#{obj_config.stop_qualifier} '#{name}' did not reach STOPPED within #{cfg.timeout_seconds}s",
+              "#{obj_config.stop_qualifier} '#{name}' did not reach STOPPED within #{sync_config.timeout_seconds}s",
               name: name, operation: 'stop', elapsed: elapsed
             )
           end

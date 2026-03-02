@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-return unless ENV['MQ_REST_ADMIN_RUBY_RUN_INTEGRATION'] == '1'
+return unless ENV['MQ_REST_ADMIN_RUN_INTEGRATION'] == '1'
 
 require 'minitest/autorun'
 require 'mq/rest/admin'
@@ -54,8 +54,8 @@ IntegrationConfig = Data.define(
 
 def load_integration_config
   IntegrationConfig.new(
-    rest_base_url: ENV.fetch('MQ_REST_BASE_URL', 'https://localhost:9443/ibmmq/rest/v2'),
-    rest_base_url_qm2: ENV.fetch('MQ_REST_BASE_URL_QM2', 'https://localhost:9444/ibmmq/rest/v2'),
+    rest_base_url: ENV.fetch('MQ_REST_BASE_URL', 'https://localhost:9473/ibmmq/rest/v2'),
+    rest_base_url_qm2: ENV.fetch('MQ_REST_BASE_URL_QM2', 'https://localhost:9474/ibmmq/rest/v2'),
     admin_user: ENV.fetch('MQ_ADMIN_USER', 'mqadmin'),
     admin_password: ENV.fetch('MQ_ADMIN_PASSWORD', 'mqadmin'),
     qmgr_name: ENV.fetch('MQ_QMGR_NAME', 'QM1'),
@@ -127,6 +127,7 @@ end
 # Methods that take name as a positional (non-keyword) argument.
 POSITIONAL_NAME_METHODS = %i[
   define_qlocal define_qremote define_qalias define_qmodel define_channel
+  delete_qlocal delete_qremote delete_qalias delete_qmodel
   delete_queue delete_channel
   display_listener display_namelist display_process display_topic display_qstatus
   ensure_qlocal ensure_qremote ensure_qalias ensure_qmodel ensure_channel
@@ -164,7 +165,28 @@ LifecycleCase = Data.define(
 end
 
 class MqIntegrationTest < Minitest::Test
+  REPO_ROOT = File.expand_path('../..', __dir__)
+  MQ_START_SCRIPT = File.join(REPO_ROOT, 'scripts/dev/mq_start.sh')
+  MQ_SEED_SCRIPT  = File.join(REPO_ROOT, 'scripts/dev/mq_seed.sh')
+  MQ_STOP_SCRIPT  = File.join(REPO_ROOT, 'scripts/dev/mq_stop.sh')
+  MQ_READY_TIMEOUT = 90
+  MQ_READY_SLEEP   = 2
+
+  @@lifecycle_started = false # rubocop:disable Style/ClassVars
+
   def setup
+    unless @@lifecycle_started
+      @@lifecycle_started = true # rubocop:disable Style/ClassVars
+      skip_lifecycle = %w[1 true yes].include?(ENV.fetch('MQ_SKIP_LIFECYCLE', '').strip.downcase)
+      unless skip_lifecycle
+        run_lifecycle_script(MQ_START_SCRIPT)
+        wait_for_rest_ready
+        run_lifecycle_script(MQ_SEED_SCRIPT)
+      end
+      Minitest.after_run do
+        run_lifecycle_script(MQ_STOP_SCRIPT) unless skip_lifecycle
+      end
+    end
     @config = load_integration_config
     @session = build_session(@config)
   end
@@ -308,7 +330,7 @@ class MqIntegrationTest < Minitest::Test
 
     # Clean up from any prior failed run.
     begin
-      session.delete_qlocal(name: TEST_ENSURE_QLOCAL)
+      session.delete_qlocal(TEST_ENSURE_QLOCAL)
     rescue MQ::REST::Admin::Error # rubocop:disable Lint/SuppressedException
     end
 
@@ -328,7 +350,7 @@ class MqIntegrationTest < Minitest::Test
     assert_equal :updated, result.action
 
     # Cleanup.
-    session.delete_qlocal(name: TEST_ENSURE_QLOCAL)
+    session.delete_qlocal(TEST_ENSURE_QLOCAL)
   end
 
   def test_ensure_channel_lifecycle
@@ -444,7 +466,7 @@ class MqIntegrationTest < Minitest::Test
   end
 
   # -------------------------------------------------------------------------
-  # LTPA auth test (expected to fail on dev containers)
+  # LTPA auth test
   # -------------------------------------------------------------------------
 
   def test_ltpa_auth_display_qmgr
@@ -459,8 +481,6 @@ class MqIntegrationTest < Minitest::Test
     refute_nil result
     assert_kind_of Hash, result
     assert contains_string_value?(result, @config.qmgr_name)
-  rescue MQ::REST::Admin::Error => e
-    skip "LTPA auth not supported on dev containers: #{e.message}"
   end
 
   private
@@ -592,5 +612,38 @@ class MqIntegrationTest < Minitest::Test
 
     refute find_matching_object(deleted, lcase.object_name),
            "#{lcase.name}: object still visible after delete"
+  end
+
+  def run_lifecycle_script(script_path)
+    system('bash', script_path, exception: true)
+  end
+
+  def wait_for_rest_ready
+    require 'net/http'
+    require 'uri'
+    require 'openssl'
+
+    config = load_integration_config
+    uri = URI.parse("#{config.rest_base_url}/admin/qmgr")
+    deadline = Time.now + MQ_READY_TIMEOUT
+
+    while Time.now < deadline
+      begin
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        http.open_timeout = 5
+        http.read_timeout = 5
+        req = Net::HTTP::Get.new(uri)
+        req.basic_auth(config.admin_user, config.admin_password)
+        req['ibm-mq-rest-csrf-token'] = 'blank'
+        response = http.request(req)
+        return if response.code == '200'
+      rescue StandardError
+        # REST endpoint not ready yet
+      end
+      sleep MQ_READY_SLEEP
+    end
+    raise "MQ REST endpoint not ready after #{MQ_READY_TIMEOUT}s"
   end
 end

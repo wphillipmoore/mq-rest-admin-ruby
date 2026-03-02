@@ -39,9 +39,9 @@ module MQ
         csrf_token: String?,
         timeout_seconds: Float,
         verify_tls: bool
-      ) -> String
+      ) -> [String, String]
 
-      def self.extract_ltpa_token: (Hash[String, String] headers) -> String?
+      def self.extract_ltpa_token: (Hash[String, String] headers) -> [String, String]?
 
       private
 
@@ -52,9 +52,9 @@ module MQ
         csrf_token: String?,
         timeout_seconds: Float,
         verify_tls: bool
-      ) -> String
+      ) -> [String, String]
 
-      def extract_ltpa_token: (Hash[String, String] headers) -> String?
+      def extract_ltpa_token: (Hash[String, String] headers) -> [String, String]?
     end
   end
 end

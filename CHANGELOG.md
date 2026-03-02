@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.3] - 2026-03-02
+
+### Bug fixes
+
+- fix version-bump-pr regex and add Gemfile.lock update (#52)
+- remove releases/index.md nav entry until first release exists (#59)
+- require name parameter for DELETE Q* methods (#72)
+- LTPA cookie extraction uses prefix matching for suffixed cookie names (#75)
+- make license_finder check blocking with approved license list (#83)
+
+### CI
+
+- rename type-check job from test: to ci: prefix (#64)
+- add concurrency group to ci-push workflow (#88)
+
+### Documentation
+
+- fix index page mismatches and restructure nav for LHS sidebar (#55)
+- merge ensure and sync documentation into single pages (#57)
+- add cross-repo documentation links to docs site (#77)
+
+### Features
+
+- port 6 runnable examples and add integration tests (#68)
+- auto-generate all MQSC command methods from mapping-data.json (#70)
+- add SyncConfig construction validation (#87)
+
+### Refactoring
+
+- rename 13 abbreviated and single-char variables to descriptive names (#66)
+
 ## [1.2.2] - 2026-02-26
 
 ### Bug fixes

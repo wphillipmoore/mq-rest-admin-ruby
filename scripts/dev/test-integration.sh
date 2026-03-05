@@ -20,31 +20,9 @@ export MQ_QM2_REST_BASE_URL="https://qm2:9443/ibmmq/rest/v2"
 export MQ_ADMIN_USER="mqadmin"
 export MQ_ADMIN_PASSWORD="mqadmin"
 
-if command -v docker-test >/dev/null 2>&1; then
-  exec docker-test
+if ! command -v docker-test >/dev/null 2>&1; then
+  echo "ERROR: docker-test not found on PATH." >&2
+  echo "Set up standard-tooling: export PATH=../standard-tooling/scripts/bin:\$PATH" >&2
+  exit 1
 fi
-
-# Fallback: run docker directly if docker-test is not on PATH.
-repo_root="$(cd "$(dirname "$0")/../.." && pwd)"
-
-docker_args=(
-  run --rm
-  -v "${repo_root}:/workspace"
-  -w /workspace
-  --network "${DOCKER_NETWORK}"
-)
-
-# Pass through MQ_* environment variables.
-while IFS='=' read -r name _; do
-  docker_args+=(-e "$name")
-done < <(env | grep '^MQ_' || true)
-
-docker_args+=("${DOCKER_DEV_IMAGE}")
-docker_args+=(bash -c "${DOCKER_TEST_CMD}")
-
-echo "Image:   ${DOCKER_DEV_IMAGE}"
-echo "Command: ${DOCKER_TEST_CMD}"
-echo "Network: ${DOCKER_NETWORK}"
-echo "---"
-
-exec docker "${docker_args[@]}"
+exec docker-test

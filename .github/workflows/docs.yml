@@ -18,6 +18,7 @@ jobs:
   deploy:
     name: "deploy: docs"
     runs-on: ubuntu-latest
+    container: ghcr.io/wphillipmoore/dev-docs:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -27,8 +28,5 @@ jobs:
       - name: Deploy docs
         uses: wphillipmoore/standard-actions/actions/docs-deploy@develop
         with:
-          version-command: >-
-            ruby -e "require_relative 'lib/mq/rest/admin/version';
-            v = MQ::REST::Admin::VERSION;
-            puts v.split('.')[0..1].join('.')"
+          version-command: grep -oP "VERSION\s*=\s*'\K[^']+" lib/mq/rest/admin/version.rb | cut -d. -f1,2
           checkout-common: "true"

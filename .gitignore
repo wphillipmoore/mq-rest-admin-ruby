@@ -49,3 +49,4 @@ doc/yard/
 
 # RuboCop remote config cache
 .rubocop-https?--*
+.worktrees/

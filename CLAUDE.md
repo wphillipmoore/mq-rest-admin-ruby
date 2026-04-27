@@ -114,12 +114,13 @@ bundle install
 bundle exec rake
 ```
 
-### Three-Tier CI Model
+### Two-Tier CI Model
 
-Testing is split across three tiers with increasing scope and cost:
+Testing is split across two tiers with increasing scope and cost:
 
 **Tier 1 — Local pre-commit (seconds):** Fast smoke tests in a single
-container. Run before every commit. No MQ, no matrix.
+container. Enforced via the `.githooks` pre-commit gate on every commit.
+No MQ, no matrix.
 
 ```bash
 ./scripts/dev/test.sh        # Unit tests in dev-ruby:3.4
@@ -128,15 +129,13 @@ container. Run before every commit. No MQ, no matrix.
 ./scripts/dev/audit.sh       # bundle-audit in dev-ruby:3.4
 ```
 
-**Tier 2 — Push CI (~3-5 min):** Triggers automatically on push to
-`feature/**`, `bugfix/**`, `hotfix/**`, `chore/**`. Single Ruby version
-(3.4), includes integration tests, no security scanners or release gates.
-Workflow: `.github/workflows/ci-push.yml` (calls `ci.yml`).
-
-**Tier 3 — PR CI (~8-10 min):** Triggers on `pull_request`. Full Ruby
+**Tier 2 — PR CI (~8-10 min):** Triggers on `pull_request`. Full Ruby
 matrix (3.2, 3.3, 3.4), all integration tests, security scanners (CodeQL,
 Trivy, Semgrep), standards compliance, and release gates. Workflow:
 `.github/workflows/ci.yml`.
+
+Push-CI was retired once `st-validate-local` reached parity with PR-CI.
+See wphillipmoore/standard-actions#176 for the parity audit and rationale.
 
 ### Docker-First Testing
 

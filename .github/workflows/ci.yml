@@ -138,7 +138,7 @@ jobs:
   # ---------------------------------------------------------------------------
 
   security-and-standards:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@develop
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.3
     with:
       language: ruby
       run-standards: ${{ inputs.run-release-gates || 'true' }}
@@ -174,7 +174,7 @@ jobs:
 
       - name: Version divergence gate (PRs targeting develop)
         if: github.event_name == 'pull_request' && github.base_ref == 'develop'
-        uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@develop
+        uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@v1.3
         with:
           head-version-command: ruby -e "require_relative 'lib/mq/rest/admin/version'; puts MQ::REST::Admin::VERSION"
           main-version-command: git show origin/main:lib/mq/rest/admin/version.rb | ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"

@@ -39,28 +39,10 @@ jobs:
       versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   audit:
-    name: "audit / dependencies / ${{ matrix.ruby-version }}"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby-version: ${{ fromJSON(inputs.ruby-versions || '["3.2", "3.3", "3.4"]') }}
-    container:
-      image: ghcr.io/wphillipmoore/dev-ruby:${{ matrix.ruby-version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Install dependencies
-        run: bundle install --jobs 4
-
-      - name: Run bundle-audit
-        run: bundle exec bundle-audit check --update
-
-      - name: Run license compliance check
-        run: |
-          gem install license_finder --no-document
-          license_finder --decisions-file=doc/dependency_decisions.yml
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
+    with:
+      language: ruby
+      versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   integration-tests:
     name: "test / integration / ${{ matrix.ruby-version }}"

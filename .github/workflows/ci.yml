@@ -30,7 +30,7 @@ jobs:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
     with:
       language: ruby
-      versions: '["3.4"]'
+      versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   test:
     uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
@@ -39,10 +39,14 @@ jobs:
       versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   audit:
-    name: "audit / dependencies"
+    name: "audit / dependencies / ${{ matrix.ruby-version }}"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: ${{ fromJSON(inputs.ruby-versions || '["3.2", "3.3", "3.4"]') }}
     container:
-      image: ghcr.io/wphillipmoore/dev-ruby:3.4
+      image: ghcr.io/wphillipmoore/dev-ruby:${{ matrix.ruby-version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

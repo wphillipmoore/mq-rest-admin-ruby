@@ -13,7 +13,7 @@
 
 ## Testing
 
-- markdownlint
+- `st-docker-run -- st-validate`
 - `bundle exec rake`
 
 ## Notes

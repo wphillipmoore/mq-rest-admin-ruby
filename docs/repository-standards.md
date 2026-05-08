@@ -29,7 +29,7 @@ bundle exec rake
 Required for daily workflow:
 
 - Ruby 3.2+, Bundler
-- `markdownlint` (required for docs validation and PR pre-submission)
+- `st-docker-run -- st-validate` (canonical validation)
 
 Required for integration testing:
 

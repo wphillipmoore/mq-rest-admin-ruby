@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   publish:
-    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.4
+    uses: wphillipmoore/standard-actions/.github/workflows/publish-release.yml@v1.5
     permissions:
       attestations: write
       contents: write
@@ -21,8 +21,7 @@ jobs:
       pull-requests: write
     with:
       ecosystem: ruby
-      version-command: >-
-        ruby -e "require_relative 'lib/mq/rest/admin/version'; puts MQ::REST::Admin::VERSION"
+      version-command: st-version show
       registry-check-command: >-
         ruby -e "
         require 'net/http'; require 'uri'; require 'json';
@@ -56,8 +55,7 @@ jobs:
       version-file: lib/mq/rest/admin/version.rb
       version-regex: '(VERSION\s*=\s*\x27).*(\x27)'
       version-replacement: '\g<1>{version}\2'
-      develop-version-command: >-
-        ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"
+      develop-version-command: st-version show
       post-bump-command: bundle lock --update mq-rest-admin
       extra-files: Gemfile.lock
     secrets:

@@ -118,67 +118,16 @@ bundle install
 ### Validation
 
 ```bash
-bundle exec rake
+st-docker-run -- st-validate   # Canonical validation (runs in dev container)
 ```
 
-### Two-Tier CI Model
+### CI
 
-Testing is split across two tiers with increasing scope and cost:
-
-**Tier 1 — Local pre-commit (seconds):** Fast smoke tests in a single
-container. Enforced via the `.githooks` pre-commit gate on every commit.
-No MQ, no matrix.
-
-```bash
-./scripts/dev/test.sh        # Unit tests in dev-ruby:3.4
-./scripts/dev/lint.sh        # RuboCop in dev-ruby:3.4
-./scripts/dev/typecheck.sh   # Steep in dev-ruby:3.4
-./scripts/dev/audit.sh       # bundle-audit in dev-ruby:3.4
-```
-
-**Tier 2 — PR CI (~8-10 min):** Triggers on `pull_request`. Full Ruby
-matrix (3.2, 3.3, 3.4), all integration tests, security scanners (CodeQL,
-Trivy, Semgrep), standards compliance, and release gates. Workflow:
-`.github/workflows/ci.yml`.
-
-Push-CI was retired once `st-validate-local` reached parity with PR-CI.
-See wphillipmoore/standard-actions#176 for the parity audit and rationale.
-
-### Docker-First Testing
-
-All tests can run inside containers — Docker is the only host prerequisite.
-The `dev-ruby:3.4` image is built from `../standard-tooling/docker/ruby/`
-and published to `ghcr.io/wphillipmoore/dev-ruby`.
-
-```bash
-# Build the dev image (one-time, from standard-tooling)
-cd ../standard-tooling && docker/build.sh
-
-# Run unit tests in container
-./scripts/dev/test.sh
-
-# Run linter in container
-./scripts/dev/lint.sh
-
-# Run type checker in container
-./scripts/dev/typecheck.sh
-
-# Run dependency audit in container
-./scripts/dev/audit.sh
-
-# Run integration tests (requires MQ containers running)
-./scripts/dev/mq_start.sh
-./scripts/dev/mq_seed.sh
-./scripts/dev/test-integration.sh
-./scripts/dev/mq_stop.sh
-```
-
-Environment overrides:
-
-- `DOCKER_DEV_IMAGE` — override the container image (default: `dev-ruby:3.4`)
-- `DOCKER_TEST_CMD` — override the test command
-- `DOCKER_NETWORK` — join a Docker network (set automatically by
-  `test-integration.sh`)
+PR CI (`.github/workflows/ci.yml`) uses standard-actions v1.5 reusable
+workflows for quality (lint, typecheck), unit tests (Ruby 3.2/3.3/3.4
+matrix), security (CodeQL, Trivy, Semgrep, standards), and release gates.
+Bespoke jobs handle dependency audit (license_finder with repo-specific
+decisions file) and integration tests (MQ containers).
 
 ### Local MQ Container
 

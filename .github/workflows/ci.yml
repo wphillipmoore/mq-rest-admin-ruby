@@ -13,7 +13,7 @@ on:
       run-security:
         type: string
         default: 'true'
-      run-release-gates:
+      run-release:
         type: string
         default: 'true'
 
@@ -26,41 +26,20 @@ concurrency:
 
 jobs:
 
-  # ---------------------------------------------------------------------------
-  # Quality: unit tests, linting, type-checking, dependency audit
-  # ---------------------------------------------------------------------------
+  quality:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    with:
+      language: ruby
+      versions: '["3.4"]'
 
-  unit-tests:
-    name: "test: unit (${{ matrix.ruby-version }})"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby-version: ${{ fromJSON(inputs.ruby-versions || '["3.2", "3.3", "3.4"]') }}
-    container:
-      image: ghcr.io/wphillipmoore/dev-ruby:${{ matrix.ruby-version }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+  test:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
+    with:
+      language: ruby
+      versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
-      - name: Mark workspace safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Fetch base branch for version checks
-        if: github.event_name == 'pull_request'
-        run: git fetch origin ${{ github.base_ref }} --depth=1
-
-      - name: Install dependencies
-        run: bundle install --jobs 4
-
-      - name: Run RuboCop
-        run: bundle exec rubocop
-
-      - name: Run tests with coverage
-        run: bundle exec rake test
-
-  type-check:
-    name: "ci: type-check"
+  audit:
+    name: "audit / dependencies"
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/wphillipmoore/dev-ruby:3.4
@@ -71,22 +50,7 @@ jobs:
       - name: Install dependencies
         run: bundle install --jobs 4
 
-      - name: Run Steep type check
-        run: bundle exec steep check
-
-  dependency-audit:
-    name: "ci: dependency-audit"
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/wphillipmoore/dev-ruby:3.4
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Install dependencies
-        run: bundle install --jobs 4
-
-      - name: Run bundle-audit (vulnerability check)
+      - name: Run bundle-audit
         run: bundle exec bundle-audit check --update
 
       - name: Run license compliance check
@@ -94,12 +58,8 @@ jobs:
           gem install license_finder --no-document
           license_finder --decisions-file=doc/dependency_decisions.yml
 
-  # ---------------------------------------------------------------------------
-  # Integration tests
-  # ---------------------------------------------------------------------------
-
   integration-tests:
-    name: "test: integration (${{ matrix.ruby-version }})"
+    name: "test / integration / ${{ matrix.ruby-version }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -133,49 +93,18 @@ jobs:
           MQ_SKIP_LIFECYCLE=1 \
           bundle exec rake integration
 
-  # ---------------------------------------------------------------------------
-  # Security and standards (shared reusable workflow)
-  # ---------------------------------------------------------------------------
-
-  security-and-standards:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.4
+  security:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
     with:
       language: ruby
-      run-standards: ${{ inputs.run-release-gates || 'true' }}
+      run-standards: ${{ inputs.run-release || 'true' }}
       run-security: ${{ inputs.run-security || 'true' }}
     permissions:
       contents: read
       security-events: write
 
-  # ---------------------------------------------------------------------------
-  # Release gates (PR only)
-  # ---------------------------------------------------------------------------
-
-  release-gates:
-    name: "release: gates"
-    if: ${{ inputs.run-release-gates != 'false' }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/wphillipmoore/dev-ruby:3.4
-    steps:
-      - name: Skip on non-PR events
-        if: github.event_name != 'pull_request'
-        run: echo "Not a pull request; skipping release gates."
-
-      - name: Checkout code
-        if: github.event_name == 'pull_request'
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Mark workspace safe for git
-        if: github.event_name == 'pull_request'
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
-      - name: Version divergence gate (PRs targeting develop)
-        if: github.event_name == 'pull_request' && github.base_ref == 'develop'
-        uses: wphillipmoore/standard-actions/actions/release-gates/version-divergence@v1.4
-        with:
-          head-version-command: ruby -e "require_relative 'lib/mq/rest/admin/version'; puts MQ::REST::Admin::VERSION"
-          main-version-command: git show origin/main:lib/mq/rest/admin/version.rb | ruby -e "eval(STDIN.read); puts MQ::REST::Admin::VERSION"
-
+  release:
+    uses: wphillipmoore/standard-actions/.github/workflows/ci-release.yml@v1.5
+    with:
+      language: ruby
+      run-release: ${{ inputs.run-release != 'false' }}

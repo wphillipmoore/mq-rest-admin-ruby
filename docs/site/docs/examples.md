@@ -36,7 +36,7 @@ summary for each queue manager.
 ruby examples/health_check.rb
 ```
 
-See [`examples/health_check.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/health_check.rb) for implementation details.
+See [`examples/health_check.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/health_check.rb) for implementation details.
 
 ## Queue depth monitor
 
@@ -47,7 +47,7 @@ approaching capacity, and sorts by depth percentage.
 ruby examples/queue_depth_monitor.rb
 ```
 
-See [`examples/queue_depth_monitor.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/queue_depth_monitor.rb) for implementation details.
+See [`examples/queue_depth_monitor.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/queue_depth_monitor.rb) for implementation details.
 
 ## Channel status report
 
@@ -58,7 +58,7 @@ channels that are defined but not running, and shows connection details.
 ruby examples/channel_status.rb
 ```
 
-See [`examples/channel_status.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/channel_status.rb) for implementation details.
+See [`examples/channel_status.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/channel_status.rb) for implementation details.
 
 ## Environment provisioner
 
@@ -69,7 +69,7 @@ across two queue managers, then verifies connectivity. Includes teardown.
 ruby examples/provision_environment.rb
 ```
 
-See [`examples/provision_environment.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/provision_environment.rb) for implementation details.
+See [`examples/provision_environment.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/provision_environment.rb) for implementation details.
 
 ## Dead letter queue inspector
 
@@ -80,7 +80,7 @@ and suggests actions when messages are present.
 ruby examples/dlq_inspector.rb
 ```
 
-See [`examples/dlq_inspector.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/dlq_inspector.rb) for implementation details.
+See [`examples/dlq_inspector.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/dlq_inspector.rb) for implementation details.
 
 ## Queue status and connection handles
 
@@ -92,4 +92,4 @@ structures into uniform flat hashes.
 ruby examples/queue_status.rb
 ```
 
-See [`examples/queue_status.rb`](https://github.com/wphillipmoore/mq-rest-admin-ruby/blob/main/examples/queue_status.rb) for implementation details.
+See [`examples/queue_status.rb`](https://github.com/mq-rest-admin-project/mq-rest-admin-ruby/blob/main/examples/queue_status.rb) for implementation details.

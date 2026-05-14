@@ -20,9 +20,9 @@ export MQ_QM2_REST_BASE_URL="https://qm2:9443/ibmmq/rest/v2"
 export MQ_ADMIN_USER="mqadmin"
 export MQ_ADMIN_PASSWORD="mqadmin"
 
-if ! command -v st-docker-test >/dev/null 2>&1; then
-  echo "ERROR: st-docker-test not found on PATH." >&2
-  echo "Set up standard-tooling: export PATH=../standard-tooling/.venv/bin:\$PATH" >&2
+if ! command -v vrg-docker-test >/dev/null 2>&1; then
+  echo "ERROR: vrg-docker-test not found on PATH." >&2
+  echo "Set up vergil-tooling: export PATH=../vergil-tooling/.venv/bin:\$PATH" >&2
   exit 1
 fi
-exec st-docker-test
+exec vrg-docker-test

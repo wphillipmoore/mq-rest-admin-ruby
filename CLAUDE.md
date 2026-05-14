@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-**Standards reference**: <https://github.com/wphillipmoore/standards-and-conventions>
-— active standards documentation lives in the standard-tooling repository under `docs/`.
-Repository profile: `standard-tooling.toml`.
+**Standards reference**: <https://github.com/vergil-project/vergil-tooling>
+— active standards documentation lives in the vergil-tooling repository under `docs/`.
+Repository profile: `vergil.toml`.
 
 ## Memory management
 
@@ -15,9 +15,9 @@ plugin/skill issue) before writing. See that file for the full
 workflow.
 
 Available skills:
-- `/standard-tooling:memory-init` — set up or update the policy header
+- `/vergil:memory-init` — set up or update the policy header
   in a project's `MEMORY.md`.
-- `/standard-tooling:memory-audit` — structured collaborative review
+- `/vergil:memory-audit` — structured collaborative review
   of memory files.
 
 ## Parallel AI agent development
@@ -28,9 +28,9 @@ while preserving shared project memory (which Claude Code derives from the
 session's starting CWD).
 
 **Canonical spec:**
-[`standard-tooling/docs/specs/worktree-convention.md`](https://github.com/wphillipmoore/standard-tooling/blob/develop/docs/specs/worktree-convention.md)
+[`vergil-tooling/docs/specs/worktree-convention.md`](https://github.com/vergil-project/vergil-tooling/blob/develop/docs/specs/worktree-convention.md)
 — full rationale, trust model, failure modes, and memory-path implications.
-The canonical text lives in `standard-tooling`; this section is the local
+The canonical text lives in `vergil-tooling`; this section is the local
 on-ramp.
 
 ### Structure
@@ -97,16 +97,16 @@ translation between Ruby idioms and native MQSC parameter names.
 
 **Status**: Pre-alpha (initial setup)
 
-**Canonical Standards**: This repository follows standards at <https://github.com/wphillipmoore/standards-and-conventions> (local path: `../standards-and-conventions` if available)
+**Canonical Standards**: This repository follows standards at <https://github.com/vergil-project/vergil-tooling> (local path: `../vergil-tooling` if available)
 
 ## Development Commands
 
 ### Standard Tooling
 
 ```bash
-cd ../standard-tooling && uv sync                                                # Install standard-tooling
-export PATH="../standard-tooling/.venv/bin:../standard-tooling/scripts/bin:$PATH" # Put tools on PATH
-git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks               # Enable git hooks
+cd ../vergil-tooling && uv sync                                                # Install vergil-tooling
+export PATH="../vergil-tooling/.venv/bin:../vergil-tooling/scripts/bin:$PATH" # Put tools on PATH
+git config core.hooksPath ../vergil-tooling/scripts/lib/git-hooks               # Enable git hooks
 ```
 
 ### Environment Setup
@@ -118,12 +118,12 @@ bundle install
 ### Validation
 
 ```bash
-st-docker-run -- st-validate   # Canonical validation (runs in dev container)
+vrg-docker-run -- vrg-validate   # Canonical validation (runs in dev container)
 ```
 
 ### CI
 
-PR CI (`.github/workflows/ci.yml`) uses standard-actions v1.5 reusable
+PR CI (`.github/workflows/ci.yml`) uses vergil-actions v2.0 reusable
 workflows for quality (lint, typecheck), unit tests (Ruby 3.2/3.3/3.4
 matrix), security (CodeQL, Trivy, Semgrep, standards), and release gates.
 Bespoke jobs handle dependency audit (license_finder with repo-specific
@@ -132,13 +132,13 @@ decisions file) and integration tests (MQ containers).
 ### Local MQ Container
 
 The MQ development environment is owned by the
-[mq-rest-admin-dev-environment](https://github.com/wphillipmoore/mq-rest-admin-dev-environment)
+[mq-rest-admin-dev-environment](https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment)
 repository. Clone it as a sibling directory before running lifecycle
 scripts:
 
 ```bash
 # Prerequisite (one-time)
-git clone https://github.com/wphillipmoore/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
+git clone https://github.com/mq-rest-admin-project/mq-rest-admin-dev-environment.git ../mq-rest-admin-dev-environment
 
 # Start the containerized MQ queue managers
 ./scripts/dev/mq_start.sh

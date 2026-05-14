@@ -1,7 +1,7 @@
 site_name: mq-rest-admin (Ruby)
-site_url: https://wphillipmoore.github.io/mq-rest-admin-ruby/
+site_url: https://mq-rest-admin-project.github.io/mq-rest-admin-ruby/
 site_description: Ruby wrapper for the IBM MQ administrative REST API
-repo_url: https://github.com/wphillipmoore/mq-rest-admin-ruby
+repo_url: https://github.com/mq-rest-admin-project/mq-rest-admin-ruby
 repo_name: mq-rest-admin-ruby
 edit_uri: ""
 

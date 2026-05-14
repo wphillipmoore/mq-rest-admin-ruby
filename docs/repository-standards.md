@@ -14,7 +14,7 @@
 - Before modifying any files, check the current branch with `git status -sb`.
 - If on `develop`, create a short-lived `feature/*` branch or ask for explicit approval to proceed on `develop`.
 - If approval is granted to work on `develop`, call it out in the response and proceed only for that user-approved scope.
-- Enable repository git hooks before committing: `git config core.hooksPath ../standard-tooling/scripts/lib/git-hooks`.
+- Enable repository git hooks before committing: `git config core.hooksPath ../vergil-tooling/scripts/lib/git-hooks`.
 
 ## Local validation
 
@@ -29,7 +29,7 @@ bundle exec rake
 Required for daily workflow:
 
 - Ruby 3.2+, Bundler
-- `st-docker-run -- st-validate` (canonical validation)
+- `vrg-docker-run -- vrg-validate` (canonical validation)
 
 Required for integration testing:
 
@@ -46,13 +46,13 @@ Required for integration testing:
 
 ## Commit and PR scripts
 
-AI agents **must** use the `st-commit` and `st-submit-pr` scripts for commits
+AI agents **must** use the `vrg-commit` and `vrg-submit-pr` scripts for commits
 and PR submission. Do not construct commit messages or PR bodies manually.
 
 ### Committing
 
 ```bash
-st-commit \
+vrg-commit \
   --type TYPE --message MESSAGE --agent AGENT \
   [--scope SCOPE] [--body BODY]
 ```
@@ -65,12 +65,12 @@ st-commit \
 - `--body` (optional): detailed commit body
 
 The script resolves the correct `Co-Authored-By` identity from
-`standard-tooling.toml` and the git hooks validate the result.
+`vergil.toml` and the git hooks validate the result.
 
 ### Submitting PRs
 
 ```bash
-st-submit-pr \
+vrg-submit-pr \
   --issue NUMBER --summary TEXT \
   [--linkage KEYWORD] [--title TEXT] \
   [--notes TEXT] [--docs-only] [--dry-run]

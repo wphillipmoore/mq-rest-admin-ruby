@@ -46,7 +46,7 @@ queues.each { |q| puts q["queue_name"] }
 
 ## Documentation
 
-Full documentation: <https://wphillipmoore.github.io/mq-rest-admin-ruby/>
+Full documentation: <https://mq-rest-admin-project.github.io/mq-rest-admin-ruby/>
 
 ## Development
 

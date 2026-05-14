@@ -1,4 +1,4 @@
-# https://github.com/wphillipmoore/standard-actions/blob/develop/.github/workflows/README.md
+# https://github.com/vergil-project/vergil-actions/blob/develop/.github/workflows/README.md
 name: CI
 
 on:
@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   audit:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-audit.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-audit.yml@v2.0
     with:
       language: ruby
       versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
@@ -50,7 +50,7 @@ jobs:
           bundler-cache: true
 
       - name: Setup MQ environment
-        uses: wphillipmoore/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
+        uses: mq-rest-admin-project/mq-rest-admin-dev-environment/.github/actions/setup-mq@main
         with:
           project-name: mqrest-ruby-${{ matrix.project-suffix }}
           qm1-rest-port: ${{ matrix.qm1-rest-port }}
@@ -68,13 +68,13 @@ jobs:
           bundle exec rake integration
 
   quality:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-quality.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-quality.yml@v2.0
     with:
       language: ruby
       versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   security:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-security.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-security.yml@v2.0
     with:
       language: ruby
       run-standards: ${{ inputs.run-release != 'false' }}
@@ -84,13 +84,13 @@ jobs:
       security-events: write
 
   test:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-test.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-test.yml@v2.0
     with:
       language: ruby
       versions: ${{ inputs.ruby-versions || '["3.2", "3.3", "3.4"]' }}
 
   version:
-    uses: wphillipmoore/standard-actions/.github/workflows/ci-version-bump.yml@v1.5
+    uses: vergil-project/vergil-actions/.github/workflows/ci-version-bump.yml@v2.0
     with:
       language: ruby
       run-release: ${{ inputs.run-release != 'false' }}

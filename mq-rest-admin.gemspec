@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
                      'IBM MQ 9.4 runCommandJSON REST endpoint, with automatic ' \
                      'attribute name translation between Ruby idioms and native ' \
                      'MQSC parameter names.'
-  spec.homepage = 'https://github.com/wphillipmoore/mq-rest-admin-ruby'
+  spec.homepage = 'https://github.com/mq-rest-admin-project/mq-rest-admin-ruby'
   spec.license = 'GPL-3.0-or-later'
   spec.required_ruby_version = '>= 3.2.0'
 
